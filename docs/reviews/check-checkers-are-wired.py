@@ -630,6 +630,24 @@ UNWIRED_BY_DECISION: dict[str, str] = {
         "guarantee. It mutates the tree, so it must not share a job "
         "with the harness it replays."
     ),
+    "probe-230-merge-invented-reflow.py": (
+        "task #230's one-shot: it classifies each merge-invented line as "
+        "REFLOW (its words already occur verbatim in a parent, so the line "
+        "is a re-wrap) or NEW TEXT, over the merges named in its own MERGES "
+        "list. That list is a FIXED SET OF SHAs - a historical population - "
+        "so the probe can never be a statement about HEAD and a gate on it "
+        "would only ever re-measure the past. "
+        "ITS POPULATION IS NOT check-merge-invented.py's, AND THE TWO "
+        "NUMBERS MUST NOT BE COMPARED CASUALLY: this probe reports "
+        "reflow=11 new=214 total=225 over its own MERGES list, while the "
+        "sibling entry below cites 122 invented lines over CONTAINER_BASE. "
+        "Different containers, both correct for their own question. "
+        "The value here is the RATIO it establishes - reflow is a small "
+        "minority, so merge-invented lines are overwhelmingly real content "
+        "rather than formatting - which is the fact the baseline decision "
+        "below rests on. Kept runnable because prose about a measurement "
+        "decays into a claim about one; this re-derives it on demand."
+    ),
     "check-merge-invented.py": (
         "its own docstring: it reports a population to READ, and a "
         "reflow that re-wraps a paragraph surfaces there as many "
