@@ -60,7 +60,6 @@ stdio path and remains necessary.
 from __future__ import annotations
 
 import json
-import re
 from typing import Annotated, Any, Final
 
 from pydantic import BaseModel, Field, StringConstraints, model_validator
@@ -79,11 +78,26 @@ _CONTROL_CHARACTERS: Final = r"\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f"
 #: LRE/RLE/PDF/LRO/RLO, then LRI/RLI/FSI/PDI.
 _BIDI_OVERRIDES: Final = "‪-‮⁦-⁩"
 
-#: The one rule every inbound string is tested against, for the PYTHON
-#: engine. Matching means **rejection**. `_NO_FORBIDDEN` below is the
-#: pydantic/Rust spelling of the same rule, negated, so a caller does
-#: not have to remember a validator at each call site.
-FORBIDDEN_CHARACTERS: Final = re.compile(f"[{_CONTROL_CHARACTERS}{_BIDI_OVERRIDES}]")
+#: **`FORBIDDEN_CHARACTERS` USED TO SIT HERE AND IS DELETED.** It was a
+#: `re.compile` of the same character class, introduced as "the PYTHON
+#: engine's copy" for a caller that never arrived. Its own docstring
+#: called it *"the one rule every inbound string is tested against"* -
+#: and that was FALSE for as long as it existed: nothing imported it,
+#: no test exercised it, and `SafeText` is validated by pydantic
+#: against `_NO_FORBIDDEN` below, which is the Rust spelling and the
+#: only spelling that runs.
+#:
+#: Review R4 recorded the same fact in passing (*"Nothing calls it"*,
+#: `REVIEW-R4.md:175`) while fixing its sibling, and left the constant
+#: in place. CodeQL's `py/unused-global-variable` found it again and
+#: this time it is amputated rather than annotated, because a
+#: definition nothing reads is inoperative code whose comment makes a
+#: load-bearing claim - the worst of both, and the shape
+#: `docs/OBLIGATIONS.md` forbids.
+#:
+#: If a Python-engine copy is ever genuinely needed, build it from
+#: `_CONTROL_CHARACTERS` and `_BIDI_OVERRIDES` at the call site, so the
+#: two spellings cannot drift apart unobserved.
 
 #: A pattern admitting only strings that contain no forbidden
 #: character.
@@ -112,9 +126,12 @@ FORBIDDEN_CHARACTERS: Final = re.compile(f"[{_CONTROL_CHARACTERS}{_BIDI_OVERRIDE
 #: `SchemaError: regex parse error ... unrecognized escape sequence`.
 #: Python's own `re` spells the same anchor `\Z`, so a pattern copied
 #: from Python docs fails here and a pattern copied from here would be
-#: wrong in a `re.compile`. `FORBIDDEN_CHARACTERS` below is the Python
-#: engine's copy and is a character class, which both engines spell
-#: identically.
+#: wrong in a `re.compile`. That asymmetry is why this module now
+#: defines the rule in the Rust spelling ONLY: the deleted
+#: `FORBIDDEN_CHARACTERS` was the Python-engine twin, and two spellings
+#: of one rule with no caller on one of them is a drift waiting to
+#: happen rather than a convenience. The character CLASS below is spelt
+#: identically by both engines, so nothing is lost by keeping one.
 #: **A NEGATED CLASS, NOT A LOOKAHEAD.** R4-H2: this read
 #: `\A(?:(?![...]).)*\z`, and the Rust engine has NO look-around at
 #: all, so declaring a single `SafeText` field raised `SchemaError:
