@@ -66,6 +66,17 @@ def make(retry_after, status=503):
 async def arm(name, retry_after, status=503):
     jc.reset_breaker_for_test()
     c = client(make(retry_after, status), outbound_budget_seconds=BUDGET)
+    # SEEDED, AND THE SEED IS THE POINT. Every handler this
+    # probe installs returns 503 or 404, so an exception always
+    # fires and `kind` was always bound - until it wasn't. Let a
+    # future edit make the call SUCCEED and the unseeded version
+    # raised `NameError: name 'kind' is not defined` at the print
+    # below: a probe that crashes confusingly on the one outcome
+    # that would be genuinely surprising. Found by CodeQL
+    # (py/uninitialized-local-variable), not by any test -
+    # nothing here exercises the success path, which is exactly
+    # why it went unseen.
+    kind = "NO EXCEPTION RAISED - the call SUCCEEDED, which this probe does not expect"
     t0 = time.monotonic()
     try:
         try:
