@@ -248,13 +248,20 @@ could see the new files.
 `ruff format` prefers a single-quoted literal to escaping the doubles inside it. Fixed by a
 one-line scripted edit, not by running `ruff format`, so the diff stays one line.
 
-**Confirming run: all 31 steps `rc=0`.** Summary lines, verbatim:
+**Confirming run on the staged tree: all 31 steps `rc=0`** (889 passed / 6 deselected in
+78.53s; 2 passed in the network arm; 4/895 collected).
 
-    ================= 889 passed, 6 deselected in 78.53s (0:01:18) =================
+**FINAL run, on the fully committed branch at `024b04a`, is the authoritative one: all 31
+steps `rc=0`, 17:39:43 -> 17:42:06.** Summary lines, verbatim:
+
+    ================= 889 passed, 6 deselected in 94.48s (0:01:34) =================
     suite floor OK: 889 passed, floor 888
-    ====================== 2 passed, 893 deselected in 1.23s =======================
+    ====================== 2 passed, 893 deselected in 1.76s =======================
     suite floor OK: 2 passed, floor 2
-    =============== 4/895 tests collected (891 deselected) in 1.00s ================
+    =============== 4/895 tests collected (891 deselected) in 1.70s ================
+
+The Gate was run **three times post-bump** and the whole 31-step set is green on the final
+commit, so the report's claim covers the tree Tier 0 would merge and not an intermediate one.
 
 **Baseline vs post: identical.** 889 passed, 0 skipped, 6 deselected; 2 network; 4 credentialed
 collected. The suite count did not move because the two renamed/replaced tests were replaced
