@@ -38,17 +38,20 @@ The number of ADRs is not written here as a literal, for the reason ADR-0034 giv
 That checker refuses this table in BOTH directions - a file with no row, and a row with no file -
 so it cannot silently stop short the way it once stopped at 0023 with twelve ADRs missing.
 
-**`Status` is read from each file's own `Status:` line, not assumed.** As at `c965ce0`, every status
-line begins with the word `Accepted` - `0029`'s reads *Accepted in part*, and no other status word
-appears anywhere in the set, so nothing here is Superseded, Rejected or Proposed. Four lines carry a
-qualifier after that word and it is load-bearing in all four: 0007, 0025, 0026 and 0029. The rest of
-each line is an attribution, not a qualification. Re-derive rather than trusting this paragraph:
+**`Status` is read from each file's own `Status:` line, not assumed.** Every line but one begins
+with the word `Accepted` - `0029`'s reads *Accepted in part*. **`0036` is the first `Proposed` ADR
+here and it is NOT in force**: it is the instrument by which Tier 0 may change the frozen design, and
+until it is Accepted the decision it records has not been taken. Nothing here is Superseded or
+Rejected. Several lines carry a qualifier after the status word and it is load-bearing in each. The
+rest of each line is an attribution, not a qualification. **This paragraph named a count and four ADR
+numbers until 0036 landed and made both wrong** - the count is gone rather than corrected, for the
+reason ADR-0034 gives. Re-derive rather than trusting this paragraph:
 
     grep -H '^\*\*Status:\*\*' docs/adr/0*.md
     grep -H '^\*\*Type:\*\*'   docs/adr/0*.md
 
 **SUPERSESSION: no ADR here supersedes or is superseded by another.** That is a statement about a
-form, not a claim that nothing was ever revised - three ADRs AMEND an earlier one's decision while
+form, not a claim that nothing was ever revised - FOUR ADRs AMEND an earlier one's decision while
 leaving it standing as the record of what was decided when. Those edges are on both rows:
 
 - **0028 amends 0021.** 0021 defined `approval_mechanism` as a closed set of `elicitation`,
@@ -59,13 +62,17 @@ leaving it standing as the record of what was decided when. Those edges are on b
 - **0035 widens 0034's selector.** 0034 replaced a stale count with the selector `Type: Deviation`;
   0035 makes it `Type: Deviation` **and** `Type: Both`. 0035 states outright that it does NOT
   revisit 0034's ruling, which stands.
+- **0036 amends 0001's pin.** 0001 pinned `fastmcp==4.0.0b4` as deliberate early adopters; 0036
+  moves it to the GA `4.0.3` now that the line has shipped, and drops the `fastmcp-slim` pin that
+  only a prerelease needed. 0001's spec target and its explicit `mcp` pin both stand, so a reader
+  acting on 0001 alone gets the right spec and the wrong version.
 
 `0007`'s *"reversing an earlier decision"* reverses an earlier **revision of the design**, not an
 ADR. There is no ADR it supersedes.
 
 | ADR | Type | Status | The decision |
 |---|---|---|---|
-| [0001](0001-target-fastmcp-4-beta.md) | Deviation | Accepted | Pin `fastmcp==4.0.0b4` and target the sessionless `2026-07-28` spec, not the stable line. |
+| [0001](0001-target-fastmcp-4-beta.md) | Deviation | Accepted - **its version pin is amended by 0036** | Pin `fastmcp==4.0.0b4` and target the sessionless `2026-07-28` spec, not the stable line. The spec target and the explicit `mcp` pin stand; the version moved to the GA `4.0.3` once the line shipped. |
 | [0002](0002-in-process-rate-limiting.md) | Deviation | Accepted | Use FastMCP's own `RateLimitingMiddleware`, in process, instead of the mandated Redis token bucket. |
 | [0003](0003-problem-json-on-mcp-transport.md) | Deviation | Accepted | Carry the complete RFC 9457 problem object as the tool result's structured content and set no media type; `problem+json` is applied properly only where a real HTTP surface exists. |
 | [0004](0004-exclude-response-limiting-middleware.md) | Deviation | Accepted | Do not adopt `ResponseLimitingMiddleware`; each tool bounds its own response size, capping the page and reporting `showing 50 of 1,240`. |
@@ -100,6 +107,7 @@ ADR. There is no ADR it supersedes.
 | [0033](0033-approval-state-is-a-published-vocabulary.md) | Design change | Accepted - **completes 0021** | `approval_state`'s four values (`approved`, `refused`, `pending`, `unavailable`) are correct and §5.3 names them as a closed set. `pending` and `unavailable` must NOT be collapsed: one is an abandoned conversation, the other one that never started. |
 | [0034](0034-the-adr-count-in-design-md-is-deleted-not-corrected.md) | Design change | Accepted - **its selector is widened by 0035** | DELETE both ADR counts in `DESIGN.md` §13 rather than correcting them, and repair the universal by naming the class - `Type: Deviation` - in the count's place. No number replaces either: a corrected count is a count that will be wrong again. |
 | [0035](0035-the-frozen-selector-must-admit-both.md) | Design change | Accepted - **widens 0034** | The frozen selector admits `Type: Both` as well as `Type: Deviation`; `Both` is NOT retired despite having zero users today; and `from 0012 onward` is DELETED, not corrected, because a boundary that must be maintained is the same defect as a count. Does not revisit 0034's ruling. |
+| [0036](0036-fastmcp-4-0-3-ga-replaces-the-4-0-0b4-beta.md) | Design change | **Proposed** - amends 0001 | Pin the GA `fastmcp==4.0.3` in place of the `4.0.0b4` beta and DROP the explicit `fastmcp-slim` line, which a GA pin resolves unnamed - measured both directions, and the repo's own control names this ADR as the remedy. `mcp==2.1.1` and `prerelease = "explicit"` both STAY. `DESIGN.md` is not edited. |
 
 ## An ADR's citations are AS AT its acceptance, and are NOT repointed
 
