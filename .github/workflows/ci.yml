@@ -1074,9 +1074,12 @@ jobs:
           # that has to be defended. 413 measured at the merge of fix/m5-exception-detail.
           printf '%s\n' "$out" | bash scripts/check-suite-floor.sh 888
 
-      # The negative arm of §8 #11 - removing the fastmcp-slim pin must fail to
-      # resolve - performs a real resolve, so it is deselected from the offline
-      # default suite and run here with its positive control.
+      # The negative arm of §8 #11 - a PRERELEASE pin whose transitive is not
+      # named must fail to resolve under `prerelease = "explicit"` - performs a
+      # real resolve, so it is deselected from the offline default suite and run
+      # here with its positive control. It read "removing the fastmcp-slim pin"
+      # until ADR-0036, which dropped that pin: at the GA 4.0.3 that mutation
+      # RESOLVES, so the old arm would have gone green by testing nothing.
       # Floored for the same reason as the default suite, and it needs it MORE:
       # this arm is a matched pair, and the pair is the point. If the negative arm
       # alone stopped being collected, the positive one would pass by itself and

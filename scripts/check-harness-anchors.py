@@ -623,7 +623,7 @@ def _sed_commands(script: str, where: str) -> list[str]:
     Reads `s<delim>PAT<delim>REPL<delim>FLAGS` and `/PAT/d`, separated
     by `;` or newlines, and returns the PAT of each. Splitting the
     script on `;` first would be wrong and silently so: U0 carries
-    `s|# transitive prerelease; must be named or resolution fails||`,
+    `s|# a GA pin resolves it unnamed; measured, not assumed||`,
     whose pattern contains the separator. So the script is SCANNED
     left to right and each command consumes its own delimiters.
 
