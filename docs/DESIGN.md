@@ -1483,9 +1483,9 @@ Canonical at `evolvconsulting/fast-mcp-jobvite`, mirrored to `Aztec03hub/fast-mc
 Apache-2.0, `Copyright 2026 evolv Consulting`, with a NOTICE.
 
 Python `>=3.12`. `fastmcp==4.0.3`, the GA line, targeting the sessionless `2026-07-28` spec as
-deliberate early adopters: the pin was the beta `4.0.0b4` until ADR-0036 (2026-09-08), five days
-after 4.0.0 shipped, and the spec target did not move. **`mcp` is pinned explicitly**, not just
-`fastmcp`: the `ResponseLimiting`
+deliberate early adopters: the pin was the beta `4.0.0b4` until ADR-0036 (2026-09-08) moved it to
+`4.0.3`, five days after `4.0.0`; the spec target did not move. **`mcp` is pinned explicitly**, not
+just `fastmcp`: the `ResponseLimiting`
 regression arrived through the transitive SDK with zero change to the code that broke, which is
 the characteristic failure mode of early adoption on a freshly major-bumped dependency.
 
@@ -1504,7 +1504,7 @@ form of this block was run rather than assumed:
 
 ```toml
 dependencies = [
-  "fastmcp==4.0.3",          # the GA line; ADR-0036 moved it off the 4.0.0b4 beta
+  "fastmcp==4.0.3",
   "mcp==2.1.1",              # the transitive SDK that broke a middleware with no code change
 ]
 
