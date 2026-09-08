@@ -1,6 +1,6 @@
 # ADR-0036: fastmcp 4.0.3, the GA line, replaces the 4.0.0b4 beta
 
-**Status:** Proposed (suborch-jobvite-403, 2026-09-08) - **NOT ACCEPTED. Tier 0 rules.**
+**Status:** Accepted (JACK as Tier 0 of the fast-mcp lane, 2026-09-08, under Phil's directive of 2026-09-08 to move every fast-mcp project to the latest fastmcp; KING concurred, K-0060). Proposed by suborch-jobvite-403 the same day, which measured it and did not decide it.
 **Type:** Design change
 
 ## Context

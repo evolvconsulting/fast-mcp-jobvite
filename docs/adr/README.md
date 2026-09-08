@@ -39,9 +39,11 @@ That checker refuses this table in BOTH directions - a file with no row, and a r
 so it cannot silently stop short the way it once stopped at 0023 with twelve ADRs missing.
 
 **`Status` is read from each file's own `Status:` line, not assumed.** Every line but one begins
-with the word `Accepted` - `0029`'s reads *Accepted in part*. **`0036` is the first `Proposed` ADR
-here and it is NOT in force**: it is the instrument by which Tier 0 may change the frozen design, and
-until it is Accepted the decision it records has not been taken. Nothing here is Superseded or
+with the word `Accepted` - `0029`'s reads *Accepted in part*. `0036` landed as the first `Proposed`
+ADR here, the instrument by which Tier 0 changes the frozen design, written by a sub-orchestrator
+that measured the change and did not decide it; it was Accepted the same day by JACK as Tier 0
+under Phil's directive with KING's concurrence, and its status line says on its face who decided
+and on what authority, which a change to a Phil-accepted ADR must. Nothing here is Superseded or
 Rejected. Several lines carry a qualifier after the status word and it is load-bearing in each. The
 rest of each line is an attribution, not a qualification. **This paragraph named a count and four ADR
 numbers until 0036 landed and made both wrong** - the count is gone rather than corrected, for the
@@ -107,7 +109,7 @@ ADR. There is no ADR it supersedes.
 | [0033](0033-approval-state-is-a-published-vocabulary.md) | Design change | Accepted - **completes 0021** | `approval_state`'s four values (`approved`, `refused`, `pending`, `unavailable`) are correct and §5.3 names them as a closed set. `pending` and `unavailable` must NOT be collapsed: one is an abandoned conversation, the other one that never started. |
 | [0034](0034-the-adr-count-in-design-md-is-deleted-not-corrected.md) | Design change | Accepted - **its selector is widened by 0035** | DELETE both ADR counts in `DESIGN.md` §13 rather than correcting them, and repair the universal by naming the class - `Type: Deviation` - in the count's place. No number replaces either: a corrected count is a count that will be wrong again. |
 | [0035](0035-the-frozen-selector-must-admit-both.md) | Design change | Accepted - **widens 0034** | The frozen selector admits `Type: Both` as well as `Type: Deviation`; `Both` is NOT retired despite having zero users today; and `from 0012 onward` is DELETED, not corrected, because a boundary that must be maintained is the same defect as a count. Does not revisit 0034's ruling. |
-| [0036](0036-fastmcp-4-0-3-ga-replaces-the-4-0-0b4-beta.md) | Design change | **Proposed** - amends 0001 | Pin the GA `fastmcp==4.0.3` in place of the `4.0.0b4` beta and DROP the explicit `fastmcp-slim` line, which a GA pin resolves unnamed - measured both directions, and the repo's own control names this ADR as the remedy. `mcp==2.1.1` and `prerelease = "explicit"` both STAY. `DESIGN.md` is not edited. |
+| [0036](0036-fastmcp-4-0-3-ga-replaces-the-4-0-0b4-beta.md) | Design change | Accepted - **amends 0001**; JACK as Tier 0 under Phil's 2026-09-08 directive, KING concurring | Pin the GA `fastmcp==4.0.3` in place of the `4.0.0b4` beta and DROP the explicit `fastmcp-slim` line, which a GA pin resolves unnamed - measured both directions, and the repo's own control names this ADR as the remedy. `mcp==2.1.1` and `prerelease = "explicit"` both STAY. `DESIGN.md` is not edited. |
 
 ## An ADR's citations are AS AT its acceptance, and are NOT repointed
 
