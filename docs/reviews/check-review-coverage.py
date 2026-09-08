@@ -209,7 +209,7 @@ UNDECLARED_BY_HISTORY: dict[str, str] = {
     "REVIEW-R6.md": "reviewed U7 at ec38835, a tree state, not a range",
     "REVIEW-R7.md": "reviewed U8/U9/U12/U10 at bc0f958, a tree state",
     "REVIEW-R8.md": "reviewed U14 at 2c6ff19, a tree state, not a range",
-    "REVIEW-7A2-R3.md": "reviewed the 7A2 section at 6f89364, a tree state, not a range",
+    "REVIEW-7A2-R3.md": "reviewed 7A2 at 6f89364, a tree state, not a range",
 }
 assert all(v.strip() for v in UNDECLARED_BY_HISTORY.values()), (
     "a blank reason is not an exemption"
