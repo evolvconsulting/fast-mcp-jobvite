@@ -367,10 +367,10 @@ ADJUDICATED: dict[tuple[int, str], tuple[str, str]] = {
     (1427, ":70"): ("OUT-OF-SCOPE", "antecedent CREDENTIAL-CHECKLIST.md"),
     (1034, ":602"): ("135c3ac", "the plan quotes 135c3ac:602 VERBATIM"),
     # QUALIFIED - the ten the proxy could not decide at threshold 1.
-    (86, "DESIGN.md:1846"): ("c15b138", "the `| *(none)* |` row"),
-    (2090, "DESIGN.md:1846"): ("c15b138", "same row, same blob"),
-    (2073, "DESIGN.md:1848"): ("c15b138", "the no-total-in-prose rule"),
-    (746, "DESIGN.md:1549-1564"): ("c15b138", "`.env.example` settings"),
+    (86, "DESIGN.md:1856"): ("c15b138", "the `| *(none)* |` row"),
+    (2090, "DESIGN.md:1856"): ("c15b138", "same row, same blob"),
+    (2073, "DESIGN.md:1858"): ("c15b138", "the no-total-in-prose rule"),
+    (746, "DESIGN.md:1559-1574"): ("c15b138", "`.env.example` settings"),
     (934, "DESIGN.md:1244-1249"): ("c15b138", "test markers, not limits"),
     (952, "DESIGN.md:455"): ("c15b138", "`Every scan starts at start=0.`"),
     (1017, "DESIGN.md:353"): (  # REPOINT-EXEMPT: a dict KEY, not a claim

@@ -8,7 +8,7 @@ auto-respond to an elicitation with no person present - Claude Code
 documents a hook that does exactly this - and the MCP specification
 places human-in-the-loop on the host, not on the server. That is
 **C4-S1**, a **High residual** which is **not mitigable server-side**
-(DESIGN.md:1842, ADR-0009). The honest claim is the one in the first
+(DESIGN.md:1852, ADR-0009). The honest claim is the one in the first
 sentence and there is no stronger one available.
 
 **TWO MECHANISMS, EXACTLY COMPLEMENTARY, AND A SINGLE-MECHANISM GUARD IS

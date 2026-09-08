@@ -66,7 +66,7 @@ name: Mirror to personal fork
 # §10 nor `docs/DECISIONS.md` D8 states a freshness requirement - both say only
 # that the repository IS mirrored - so daily remains inside the contract.
 #
-# There is also a positive argument for the delay. `docs/research/FASTMCP.md:845`
+# There is also a positive argument for the delay. `docs/research/FASTMCP.md:855`
 # records that this mirror "doubles the blast radius of a committed secret and
 # mirrors history", and a per-push force-push of every ref races the TruffleHog
 # step at `ci.yml:745` with no ordering between them. A daily cadence puts the

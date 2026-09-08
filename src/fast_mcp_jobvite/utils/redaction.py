@@ -26,12 +26,12 @@ in the log line, so the case is the floor here and not the
 specification.
 
 **Arguments are redacted by allow-list, and the direction is
-deliberate.** DESIGN.md:1887 rates C7-I1 - candidate PII written to logs
+deliberate.** DESIGN.md:1897 rates C7-I1 - candidate PII written to logs
 in the clear - **Critical**, and `ai/tool-calling.md:171-172` requires
 the audit event to carry "validated arguments (PII redacted)". A
 deny-list of known PII key names fails *open*: the argument nobody
 thought of is emitted in the clear, which is the failure mode
-DESIGN.md:1876 (C6-I2) already rejects for output fields in favour of
+DESIGN.md:1886 (C6-I2) already rejects for output fields in favour of
 "path-keyed allow-list fails closed: an unlisted field is dropped until
 someone adds it deliberately". The same reasoning applies with more
 force on the audit path, because `create_candidate`'s arguments **are**
@@ -142,7 +142,7 @@ NON_SENSITIVE_ARGUMENT_KEYS: Final[frozenset[str]] = frozenset(
         "page",
         "eId",
         # ADMITTED BY THE FOURTH CLAUSE ABOVE, AND IT IS THE ONE
-        # ARGUMENT HERE WITH A THREAT ROW OF ITS OWN. DESIGN.md:1806
+        # ARGUMENT HERE WITH A THREAT ROW OF ITS OWN. DESIGN.md:1816
         # C1-T1 names flipping `send_email` to `true` a HIGH threat and
         # DESIGN.md:242 makes its `false` default a safety property.
         # Redacted to `[REDACTED:bool]` the audit event - the artefact a
@@ -388,7 +388,7 @@ def _redacted_value(value: JsonValue) -> str:
           "[REDACTED:str]"}}
 
     The `job_id` survived because `job_id` is allow-listed, even though
-    nothing had allowed `secretBlob`. DESIGN.md:1876 calls C6-I2's
+    nothing had allowed `secretBlob`. DESIGN.md:1886 calls C6-I2's
     mechanism a **path-keyed** allow-list for exactly this reason:
     membership has to be judged on the path, not on the leaf name in
     isolation.
@@ -686,7 +686,7 @@ def fence_payload(
     - the path decides `FENCE` and the value is a `str` -> fenced;
     - the path decides `NOT_FREE_TEXT` -> passed through;
     - **anything else -> DROPPED.** That covers an unregistered path
-      (the path-keyed allow-list failing closed, DESIGN.md:1876) *and*
+      (the path-keyed allow-list failing closed, DESIGN.md:1886) *and*
       a `FENCE` decision arriving as a non-string, which cannot be
       fenced and must not be stringified.
 
@@ -724,7 +724,7 @@ def fence_payload(
         decision = _lookup(path, registry)
         if decision is None:
             # UNREGISTERED. Dropped until someone admits it
-            # deliberately - the direction DESIGN.md:1876 requires and
+            # deliberately - the direction DESIGN.md:1886 requires and
             # the one a deny-list gets backwards.
             continue
         # §9 HAZARD 4 IS APPLIED HERE, AND THE POSITION IS THE POINT.

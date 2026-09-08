@@ -191,7 +191,7 @@ PY
 # value a threat row is written about.
 # ===========================================================================
 
-# C2-I1, DESIGN.md:1820. Flipped to True the framework log receives raw
+# C2-I1, DESIGN.md:1830. Flipped to True the framework log receives raw
 # candidate PII. Flipping rather than deleting, because the framework's
 # own default is False and a deleted keyword changes nothing.
 mutate "M1  include_payloads is flipped to True" \

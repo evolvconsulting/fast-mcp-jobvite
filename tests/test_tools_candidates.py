@@ -826,7 +826,7 @@ def test_case20_a_string_field_the_registry_does_not_know_is_dropped() -> None:
 
     #20 is about the non-string case, and a reader could conclude a
     STRING with no decision is admitted. It is not: an unlisted path is
-    dropped until someone adds it deliberately (DESIGN.md:1876's
+    dropped until someone adds it deliberately (DESIGN.md:1886's
     path-keyed allow-list, quoted in `utils/redaction.py`).
     """
     payload = {"candidates": [{"eId": "TESTCND1", "unknownNote": "hello"}]}

@@ -7,8 +7,8 @@ license = "Apache-2.0"  # B89 SPDX id; README section deferred with B77
 license-files = ["LICENSE", "NOTICE"]
 authors = [{ name = "evolv Consulting" }]
 
-# DESIGN.md:1497-1506 states this block verbatim at `fastmcp==4.0.0b4`
-# plus an explicit `fastmcp-slim==4.0.0b4`, and ADR-0001 pins that beta.
+# DESIGN.md:1505-1513 states this block verbatim: `fastmcp==4.0.3` and `mcp==2.1.1`.
+# Until ADR-0036 it read `fastmcp==4.0.0b4` plus `fastmcp-slim==4.0.0b4` (ADR-0001).
 # The design is FROZEN, so ADR-0036 is what changes it: 4.0 went GA on
 # 2026-08-31 and 4.0.3 on 2026-09-05, and a GA pin resolves
 # `fastmcp-slim` unnamed. MEASURED, both directions, in one `uv lock`
@@ -20,7 +20,7 @@ authors = [{ name = "evolv Consulting" }]
 # pin whose justification no longer holds:
 # a GA pin resolves it unnamed; measured, not assumed
 #
-# `mcp` stays pinned explicitly. DESIGN.md:1486-1488's reason is
+# `mcp` stays pinned explicitly. DESIGN.md:1487-1490's reason is
 # untouched by the GA move: the ResponseLimiting regression arrived
 # through the transitive SDK with zero change to the code that broke.
 dependencies = [
@@ -125,7 +125,7 @@ dev = [
   # `uv run --with pip-audit`, which resolves UNPINNED outside uv.lock - the exact
   # defect ADR-0015 records for pip-licenses one entry above.
   "pip-audit>=2.7",
-  # C8-I1 is a CRITICAL row and DESIGN.md:1711-1724's two commit-time gates are its
+  # C8-I1 is a CRITICAL row and DESIGN.md:1721-1734's two commit-time gates are its
   # stated mitigation. `.pre-commit-config.yaml` existed and pre-commit itself was
   # declared NOWHERE, so on a fresh clone `uv sync --frozen` produced an environment
   # in which the hooks could never install: the mitigation was in force only for the
@@ -138,7 +138,7 @@ dev = [
 # Advisory-ignore table. Owned by U11 (scripts/check_advisories.py), landed empty
 # here so U11 only ever edits rows inside it - IMPLEMENTATION-PLAN.md:920-922.
 #
-# DESIGN.md:1594-1604: an entry is legal ONLY for an advisory our code cannot
+# DESIGN.md:1604-1614: an entry is legal ONLY for an advisory our code cannot
 # reach, and only with an id, a date, a written unreachability reason, and an
 # expiry no more than 30 days out. Never a blanket ignore, never a raised
 # threshold. check_advisories.py reads this table, emits pip-audit's

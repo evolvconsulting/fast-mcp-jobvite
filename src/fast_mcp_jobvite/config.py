@@ -176,7 +176,7 @@ class Settings(BaseSettings):
     """The fifteen variables, and nothing else.
 
     The set is closed: `.env.example` and DESIGN.md hold the same
-    fifteen, and DESIGN.md:1627-1631 makes `.env.example` the single
+    fifteen, and DESIGN.md:1637-1641 makes `.env.example` the single
     enumeration everything else is checked against rather than a second
     hand-kept list.
 
@@ -220,14 +220,14 @@ class Settings(BaseSettings):
 
     # --- Limits
     # ------------------------------------------------------------
-    #: DESIGN.md:1653-1656. 50 is the figure the caller-facing string
+    #: DESIGN.md:1663-1666. 50 is the figure the caller-facing string
     #: `showing 50 of 1,240` already uses, not an arbitrary pick.
     max_results: int = Field(default=50, ge=1)
-    #: DESIGN.md:1657-1662. **A conservative guess, not a vendor
+    #: DESIGN.md:1667-1672. **A conservative guess, not a vendor
     #: figure** - Jobvite documents no numeric limit at all. Checklist
     #: row 9 is what replaces it with an observation.
     outbound_rate_limit: int = Field(default=6, ge=1)
-    #: DESIGN.md:1663-1668 (ADR-0027). §4.3 requires the total outbound
+    #: DESIGN.md:1673-1678 (ADR-0027). §4.3 requires the total outbound
     #: budget to be **configured**, and until ADR-0027 named it the
     #: design demanded a variable no other section admitted existed.
     #: The default mirrors `DEFAULT_OUTBOUND_BUDGET_SECONDS` and is a

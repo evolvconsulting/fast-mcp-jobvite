@@ -700,7 +700,7 @@ def test_an_invalid_inbound_request_id_is_replaced_rather_than_used(
 ) -> None:
     """C7-T1: a newline in the inbound id forges a log entry.
 
-    DESIGN.md:1885.
+    DESIGN.md:1895.
     """
     resolved = resolve_request_id(bad)
     assert resolved != bad

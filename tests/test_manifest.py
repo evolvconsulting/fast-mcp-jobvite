@@ -3,7 +3,7 @@
 Three arms, and the third is the one that earns the case its keep:
 
 1. `mcp` is present in `[project].dependencies` with an `==` pin.
-   DESIGN.md:1485-1488 pins it explicitly rather than relying on
+   DESIGN.md:1485-1490 pins it explicitly rather than relying on
    `fastmcp` to hold it, because the `ResponseLimiting` regression
    arrived through the transitive SDK with zero change to the code that
    broke.
@@ -68,10 +68,11 @@ def test_the_runtime_dependency_set_is_exactly_these_and_nothing_else() -> None:
     meant to cost a deliberate edit.
 
     **Widen this set by APPENDING. Never relax it to a subset check.**
-    DESIGN.md:1499-1501 states three pins; ADR-0036 removes the second
-    of them, because at the GA 4.0.3 `fastmcp-slim` resolves unnamed
-    and the comment calling it load-bearing had become false. The
-    remaining two are not to be removed or reordered.
+    DESIGN.md:1507-1508 states two pins; the block held three until
+    ADR-0036 removed the second, `fastmcp-slim`, because at the GA
+    4.0.3 it resolves unnamed and the comment calling it load-bearing
+    had become false. The remaining two are not to be removed or
+    reordered.
     """
     assert set(_dependencies()) == {
         "fastmcp==4.0.3",
@@ -110,7 +111,7 @@ def test_the_runtime_dependency_set_is_exactly_these_and_nothing_else() -> None:
 def test_prerelease_is_explicit() -> None:
     """`--prerelease=allow` is global in uv; `explicit` confines it.
 
-    DESIGN.md:1518-1520.
+    DESIGN.md:1525-1530.
     """
     with PYPROJECT.open("rb") as fh:
         assert tomllib.load(fh)["tool"]["uv"]["prerelease"] == "explicit"
@@ -150,7 +151,7 @@ def test_uv_lock_check_passes_without_amending_the_lockfile() -> None:
 def test_a_prerelease_pin_without_its_transitive_still_fails(
     tmp_path: pathlib.Path,
 ) -> None:
-    """The mechanism DESIGN.md:1518-1520 pins, asserted as BEHAVIOUR.
+    """The mechanism DESIGN.md:1525-1530 pins, asserted as BEHAVIOUR.
 
     `prerelease = "explicit"` confines uv's global `--prerelease=allow`,
     and the cost is that a prerelease arriving TRANSITIVELY must be
@@ -185,7 +186,7 @@ def test_a_prerelease_pin_without_its_transitive_still_fails(
     assert proc.returncode != 0, (
         "a prerelease pin resolved with its transitive unnamed. Either uv's "
         'behaviour changed or prerelease = "explicit" is no longer in force; '
-        f"DESIGN.md:1518-1520 needs an ADR before it is touched. Output:\n{combined}"
+        f"DESIGN.md:1525-1530 needs an ADR before it is touched. Output:\n{combined}"
     )
     assert "fastmcp-slim" in combined, (
         f"failed, but not for the stated reason:\n{combined}"

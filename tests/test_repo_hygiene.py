@@ -31,7 +31,7 @@ from fast_mcp_jobvite.config import Settings
 
 from .conftest import ENV_EXAMPLE, GITIGNORE, REPO_ROOT
 
-# DESIGN.md:1636-1641 counts five credential variables; §7.2 adds
+# DESIGN.md:1646-1651 counts five credential variables; §7.2 adds
 # JOBVITE_HTTP_TOKENS, the bearer-token map, as the sixth secret-class
 # name. Six, enumerated here and cross-checked against the file below so
 # the list cannot silently go stale.

@@ -246,7 +246,7 @@ async def test_the_live_middleware_stack_is_five_and_the_fifth_is_injected() -> 
     `dereference_schemas` is true, which is its default. C2 was written
     against a stack that is not the one that runs; ADR-0032 ADOPTED the
     fifth rather than disabling it, so the threat model at
-    `DESIGN.md:1812` now names all four - `Timing, StructuredLogging,
+    `DESIGN.md:1822` now names all four - `Timing, StructuredLogging,
     RateLimiting, DereferenceRefs` - and carries its own row, C2-T2.
     This test is what keeps that heading honest about what runs.
 

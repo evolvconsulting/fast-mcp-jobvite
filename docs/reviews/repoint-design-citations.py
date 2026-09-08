@@ -117,20 +117,56 @@ def report(sha: str) -> str:
 #: leads there rather than a verdict, and a ruling made from a directory
 #: name is exactly the reasoning this project keeps finding wrong. The
 #: refusal is what makes leaving them undecided SAFE.
-LIVE_PREFIXES = ("src/", "tests/", "scripts/", ".github/")
-RECORD_PREFIXES = ("docs/adr/", "docs/plans/")
+#:
+#: RULED 2026-09-08 (JACK, evolv consensus/JACK.md J-0084), after
+#: f608850 added ten lines to DESIGN.md section 10 and
+#: `--since a9a85ed` reported 232 MOVED, 136 of them here. Read, not
+#: inferred from a name: docs/worklogs and docs/archive hold reports
+#: of work at a time and docs/briefs the briefs that dispatched it,
+#: so all three are RECORD; docs/briefs/PREAMBLE.md is the live
+#: working rule, LIVE, and the longest matching prefix wins so that
+#: file ruling holds under the directory ruling. pyproject.toml and
+#: .pre-commit-config.yaml describe the manifest and the hook config
+#: as they are, LIVE. docs/reviews is mixed on purpose: a .py or .sh
+#: there is an instrument that runs against the current tree (its own
+#: examples carry REPOINT-EXEMPT and are skipped), LIVE; a .md or .txt
+#: there is a review, a ruling, an audit or an evidence file, RECORD.
+LIVE_PREFIXES = (
+    "src/",
+    "tests/",
+    "scripts/",
+    ".github/",
+    "pyproject.toml",
+    ".pre-commit-config.yaml",
+    "docs/briefs/PREAMBLE.md",
+)
+RECORD_PREFIXES = (
+    "docs/adr/",
+    "docs/plans/",
+    "docs/worklogs/",
+    "docs/briefs/",
+    "docs/archive/",
+)
+INSTRUMENT_DIRS = ("docs/reviews/",)
+INSTRUMENT_SUFFIXES = (".py", ".sh")
 
 
 def classify(path: str) -> str:
     """LIVE, RECORD or UNRULED.
 
-    The unknown case is UNRULED on purpose - see the note above.
+    The unknown case is UNRULED on purpose - see the note above. The
+    longest matching prefix wins, so a file ruled under a directory
+    ruled the other way keeps its own ruling.
     """
-    if path.startswith(RECORD_PREFIXES):
-        return "RECORD"
-    if path.startswith(LIVE_PREFIXES):
-        return "LIVE"
-    return "UNRULED"
+    if path.startswith(INSTRUMENT_DIRS):
+        return "LIVE" if path.endswith(INSTRUMENT_SUFFIXES) else "RECORD"
+    live = max((p for p in LIVE_PREFIXES if path.startswith(p)), key=len, default="")
+    record = max(
+        (p for p in RECORD_PREFIXES if path.startswith(p)), key=len, default=""
+    )
+    if not live and not record:
+        return "UNRULED"
+    return "LIVE" if len(live) > len(record) else "RECORD"
 
 
 def parse(

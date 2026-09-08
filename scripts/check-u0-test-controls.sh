@@ -9,7 +9,7 @@
 # written over its output. A green from tests/ is worth exactly what their failure
 # modes are worth, so each one is broken here on purpose and required to go red.
 #
-# The rule the design gates already follow (DESIGN.md:1564-1569, and the reason
+# The rule the design gates already follow (DESIGN.md:1574-1579, and the reason
 # check-coupling-controls.py exists): a checker that has only ever passed is the
 # same failure as the sentence it replaced.
 #

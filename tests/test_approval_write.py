@@ -22,7 +22,7 @@ asserts that the server requires an approval response from the host and
 refuses to write without one. It never asserts, implies or names a
 human: a host may auto-respond with no person present, which is C4-S1,
 a **High residual** that is **not mitigable server-side**
-(DESIGN.md:1842, ADR-0009).
+(DESIGN.md:1852, ADR-0009).
 
 A suite passing only against synthetic fixtures proves the client is
 self-consistent, not that it speaks Jobvite (DESIGN.md:1339-1341). The
@@ -1119,7 +1119,7 @@ async def test_the_audit_event_records_send_email_as_its_value(
     the whole domain**, so the record could not distinguish a write that
     emailed a live person from one that did not.
 
-    `DESIGN.md:1806` C1-T1 names flipping this field to `true` a
+    `DESIGN.md:1816` C1-T1 names flipping this field to `true` a
     **High** threat and `DESIGN.md:242` makes its `false` default a
     safety property. The audit event is the artefact a compliance reader
     consults after the fact, and it was the one place that question had

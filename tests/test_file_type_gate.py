@@ -1,6 +1,6 @@
 """U15 - the committed-file-type gate.
 
-`DESIGN.md:1714-1724`, threat row C8-I1.
+`DESIGN.md:1724-1734`, threat row C8-I1.
 
 **How this suite is built to be falsifiable in BOTH directions**,
 because a refusal-only suite is green against a gate that refuses
@@ -21,7 +21,7 @@ permits everything:
   in mind.
 
 **The gate's stated ceiling is not tested here and must not be**
-(`DESIGN.md:1722-1724`): it stops a *file* of the wrong type. It does
+(`DESIGN.md:1732-1734`): it stops a *file* of the wrong type. It does
 nothing about confidential prose pasted into Markdown, which is the
 incident that actually happened.
 `test_the_gate_does_NOT_stop_confidential_prose_in_markdown` pins that
@@ -251,7 +251,7 @@ def test_the_nul_backstop_catches_content_no_magic_signature_matches() -> None:
 
 # ----------------------------------------------------------------------
 # The stated ceiling, pinned as a fact rather than left for a reader to
-# assume away. DESIGN.md:1722-1724.
+# assume away. DESIGN.md:1732-1734.
 # ----------------------------------------------------------------------
 
 
@@ -259,7 +259,7 @@ def test_the_gate_does_NOT_stop_confidential_prose_in_markdown() -> None:
     """This asserts a LIMIT, not a capability. It must keep passing.
 
     The incident that actually happened was confidential *prose*. This
-    gate permits it, by design, and `DESIGN.md:1722-1724` says so. If
+    gate permits it, by design, and `DESIGN.md:1732-1734` says so. If
     someone later makes this test fail by teaching the gate to scan
     prose, that is a design change and needs an ADR - not a quiet edit
     here.
@@ -409,7 +409,7 @@ def test_e2e_the_gate_reads_the_index_not_the_worktree(
 def test_e2e_an_override_needs_its_allowlist_entry_staged(
     scratch_repo: pathlib.Path,
 ) -> None:
-    """DESIGN.md:1720-1721 - the exception is in the same diff."""
+    """DESIGN.md:1730-1731 - the exception is in the same diff."""
     (scratch_repo / "thing.bin").write_text("hello\n")
     (scratch_repo / ".file-type-allowlist").write_text("thing.bin\n")
     _git(scratch_repo, "add", "thing.bin")  # allowlist NOT staged

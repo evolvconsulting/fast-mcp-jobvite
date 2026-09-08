@@ -463,7 +463,7 @@ JOBFEED_PAGE_CAP: Final = 1000
 
 #: `JOBVITE_MAX_RESULTS`, the CONFIGURED half of
 #: `min(transport_cap, configured_result_cap)` (DESIGN.md:473-475,
-#: DESIGN.md:1653-1656). 50 agrees with the `showing 50 of 1,240`
+#: DESIGN.md:1663-1666). 50 agrees with the `showing 50 of 1,240`
 #: string a caller already reads, which makes it internally consistent
 #: and NOT a measurement of anything.
 DEFAULT_MAX_RESULTS: Final = 50
@@ -500,7 +500,7 @@ DEFAULT_MAX_RESULTS: Final = 50
 #:   The budget does not bound the request count at all, which is the
 #:   ADR's load-bearing point; it cannot be what sizes this.
 #: * **Not "5.5 hours at 6/min".** `JOBVITE_OUTBOUND_RATE_LIMIT`
-#:   (DESIGN.md:1657-1662) is a documented default whose self-throttle
+#:   (DESIGN.md:1667-1672) is a documented default whose self-throttle
 #:   is NOT IMPLEMENTED (task #43 measured its absence). Sizing a
 #:   ceiling against machinery that does not exist is sizing it
 #:   against nothing.
@@ -639,7 +639,7 @@ class ScanResult:
 #: outbound attempts for one tool invocation (DESIGN.md:392-394).
 #:
 #: **60 is a choice, not a measurement**, and it is recorded as one for
-#: the same reason DESIGN.md:1657-1662 records the 6/min rate limit as a
+#: the same reason DESIGN.md:1667-1672 records the 6/min rate limit as a
 #: guess. No Jobvite response-time distribution has ever been observed
 #: on this project, so there is nothing to derive a percentile from. It
 #: is sized to be comfortably longer than one 30-second read timeout

@@ -83,7 +83,7 @@ RESULT_STATUS_ERROR: Final = "error"
 #: `8`/`9`/`a`/`b`.
 #:
 #: Inbound `X-Request-ID` is validated against this before use
-#: (DESIGN.md:657-659, threat C7-T1 at DESIGN.md:1885). An unvalidated
+#: (DESIGN.md:657-659, threat C7-T1 at DESIGN.md:1895). An unvalidated
 #: inbound id is a log-forging vector: a value carrying a newline writes
 #: a second, attacker-authored line into the audit stream.
 _UUID4_RE: Final = re.compile(
@@ -219,7 +219,7 @@ def resolve_request_id(inbound_request_id: str | None = None) -> str:
     An inbound `X-Request-ID` is **echoed only if it is a valid UUIDv4**
     (DESIGN.md:657-659). Anything else is discarded silently and
     replaced, rather than rejected: a malformed correlation header is
-    not a reason to fail a tool call, and C7-T1 (DESIGN.md:1885) asks
+    not a reason to fail a tool call, and C7-T1 (DESIGN.md:1895) asks
     for the value to be "validated as a UUIDv4 before use and replaced
     if invalid".
 
