@@ -4,7 +4,7 @@
 WHY THIS EXISTS. `pip-audit` fails on ANY advisory: it has no severity
 threshold, so one advisory anywhere in the transitive tree turns a
 required check red and blocks every merge, including the merge that
-fixes it. We pinned `fastmcp==4.0.0b4` and `mcp==2.1.1` deliberately
+fixes it. We pinned `fastmcp==4.0.3` and `mcp==2.1.1` deliberately
 (B72), so we should expect advisories and owe them a sanctioned response
 - because the unsanctioned response is a blanket ignore, which is the
 silent suppression the design forbids and which nobody ever removes.

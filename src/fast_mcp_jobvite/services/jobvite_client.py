@@ -1225,7 +1225,7 @@ class JobviteClient:
     owns the one-call path. Without this method U4 would be an
     auth-and-error module with no caller.
 
-    ADR-0007 chose `httpx2`: `fastmcp 4.0.0b4` does not install `httpx`
+    ADR-0007 chose `httpx2`: `fastmcp 4.0.3` does not install `httpx`
     at all, and `httpx2` ships `MockTransport` in the box, which is what
     lets the credential-free test strategy add no third-party mocking
     library.
