@@ -402,3 +402,5 @@ reintroduced through the endpoint rather than through the number.
    docstring, and the reason bare citations are resolved WITHOUT being filtered by antecedent.
 4. **I reused `#204`'s selectors** rather than writing my own. Agreement between this census and
    `#204`'s counts is therefore shared-instrument agreement, not independent confirmation.
+
+<!-- REVIEW-COVERS: 4bc96a4..7e8adfa -->

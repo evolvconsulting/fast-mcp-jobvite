@@ -320,3 +320,5 @@ it names: a retyped figure (M2), a denominator not re-derived (H2), and a deleti
 2. My bullet selector is `^- ` at column 0. It cannot see an indented continuation bullet. The
    counts agree with the ruling's, which means we may share the selector, not that the selector is
    right.
+
+<!-- REVIEW-COVERS: 04432c5..e485bce PATHS: docs/plans/IMPLEMENTATION-PLAN.md -->
