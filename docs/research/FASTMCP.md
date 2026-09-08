@@ -675,22 +675,22 @@ Removals / renames:
 - Tasks moved to an extension: `mcp.add_extension(TasksExtension())` from `fastmcp_tasks`; `task=` only valid on tools.
 - Middleware hooks now observe **every** inbound message, including notifications and unroutable requests.
 
-Prerelease install:
+Install (4.0 has been GA since 2026-08-31; the prerelease recipe that sat here, `fastmcp==4.0.0b3` with a `constraint-dependencies` line naming `fastmcp-slim`, is no longer needed, and `fastmcp-slim` is no longer named at all, see the **Version to pin** row above):
 
 ```bash
-pip install "fastmcp==4.0.0b3"
+pip install "fastmcp==4.0.3"
 ```
 
 ```toml
 [tool.uv]
-constraint-dependencies = ["fastmcp-slim==4.0.0b3"]
+prerelease = "explicit"   # inert at a GA pin; refuses a future prerelease nobody named
 ```
 
 ### Design rules for `fast-mcp-jobvite` on 4.0
 
 1. Never use `exclude_args=`, `serializer=`, `sampling_handler=`, `ctx.sample*`, `ctx.list_roots()` — all removed in 4.0, confirmed by signature.
 2. If we call `ctx.elicit()`, always pass `response_type`.
-3. Keep our HTTP client wrapper's `except httpx.*` clauses in **one module** so the `httpx2` swap is a single-file change.
+3. The HTTP client is `httpx2`, the one FastMCP ships (ADR-0007). Its exception handling lives in **one module**, `services/jobvite_client.py` (the `except (httpx2.HTTPError, ...)` clause and the `isinstance` classification into `JobviteUnavailableError`); `utils/redaction.py` touches `httpx2` only for its logger. Keep it that way, so any transport change stays a one-file edit.
 4. Use `mcp.mount(namespace=...)` semantics from day one if we ever compose servers.
 5. Pin `mcp` alongside `fastmcp`. The one 4.0 defect we found (§8, `ResponseLimitingMiddleware`) was a **regression caused by the `mcp` 1.x → 2.x bump underneath unchanged middleware code** — the characteristic hazard of early adoption.
 
