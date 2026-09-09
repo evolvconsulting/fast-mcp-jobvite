@@ -75,7 +75,7 @@ already `completed`, say so and stop.**
 - **`docs/OBLIGATIONS.md` is not yours to hand-edit.** If your change moves an anchor, run
   `docs/reviews/check-obligations.py` and repoint by **parsing its output**, never by retyping a
   number you just read. Quote its verbatim output in your report.
-- **Remove your worktree when done**, and say in the report that you did.
+- **Remove your worktree when done, and say so** - unless your brief keeps it for me to read.
 
 ## Evidence standards
 
@@ -162,16 +162,37 @@ matches nothing looks identical to a harness that ran nothing.
 
 ## How to deliver
 
-Two channels, both required. Your final Agent-tool output does NOT reach me.
+Two channels, both required. Your final Agent-tool output does NOT reach whoever dispatched you.
 
-1. **Your report, committed on your branch**, at the path your brief names - `docs/worklogs/` or
-   `docs/reviews/`. Never only a worktree, never `/tmp`: a 48KB report with nineteen findings was
-   destroyed exactly that way.
-2. **`SendMessage` with `to: "team-lead"`.** **`to: "main"` does NOT work** - it resolves to you, the
+1. **Your report, committed on your branch**, at the path your brief names. Never only a worktree,
+   never `/tmp`: a 48KB report with nineteen findings was destroyed exactly that way.
+2. **`SendMessage` to the agent that dispatched you.** A sub-orchestrator answers the
+   super-orchestrator, `to: "team-lead"`; a worker or a reviewer answers its own parent, by that
+   agent's name, and its brief names it. **`to: "main"` does NOT work** - it resolves to you, the
    sender, and errors. Too long for one call? Send numbered parts, never truncate.
 
 Inbound messages reach you only when you go IDLE - not between two tool calls. If you want to stay
 reachable, break long work into turns.
+
+**WHERE EACH KIND OF DOCUMENT LIVES, AND TWO OF THE THREE MOVED OUT OF THIS REPOSITORY.**
+`PROTOCOL-super-orchestrators.md` (ADOPTED by KING on 2026-09-08, K-0074, after seven review
+rounds) rules that a product repository keeps only its CANON and that per-task prose lives in the
+evolv operations repository. Where you write is therefore decided by what the document IS:
+
+- **Your per-task BRIEF is not in this repository.** It is `consensus/<OWNER>-brief-<name>.md`
+  under evolv. `docs/briefs/` keeps canon only - this file, which every agent here reads first,
+  and `PROTOCOL-sub-orchestrators.md`. The per-task briefs already sitting in `docs/briefs/` are a
+  RECORD of how it used to be done; they are not a location to add to.
+- **A REVIEW round's prose is not in this repository either.** It is
+  `reviews/REVIEW-<repo or subject>-R<n>.md` under evolv, and what lands here is ONE STUB per
+  round, described below. This is the change that removed the prose which had driven `docs/` to
+  5.65 times the size of source.
+- **A WORKLOG - a measurement report, and not a review - still lands in `docs/worklogs/`** on your
+  branch, with a byte-identical copy under evolv. The PROTOCOL left this one for this amendment to
+  settle (section 5, K-0060 condition 2) and this is the settlement: it does not move. The copy is
+  not duplication for its own sake - a teammate's `SendMessage` only arrives at its leader's next
+  turn boundary, so the FILE is the channel that can be read without one.
+  `docs/worklogs/JOBVITE-BUMP-403-report.md` and `docs/worklogs/REPOINT-403-report.md` are the pair.
 
 **Every finding ships with a suggested fix, at every severity including nits.** A finding without a
 remedy costs the author the whole diagnosis a second time.
@@ -179,10 +200,25 @@ remedy costs the author the whole diagnosis a second time.
 **End with what you did NOT verify.** That section is where I decide what to check myself, so it is
 for what you could not settle - not for a cheap item you simply did not try.
 
-**IF YOUR REPORT IS A CODE REVIEW, DECLARE THE RANGE YOU COVERED**, as an HTML comment directly
-under the heading, so it renders as nothing:
+**IF YOUR REPORT IS A CODE REVIEW, DECLARE THE RANGE YOU COVERED - IN TWO PLACES, BECAUSE THERE
+ARE NOW TWO READERS.** The prose report under evolv opens with the declaration, as an HTML comment
+directly under the heading so it renders as nothing, for the human and for the round after yours:
 
     <!-- REVIEW-COVERS: <base>..<head> -->
+
+And this repository gets that SAME LINE and nothing else, as a one-line stub, for the checker:
+
+    docs/reviews/REVIEW-<subject>-R<n>.md
+
+`docs/reviews/REVIEW-403-R1.md` through `-R6.md` are six worked examples, one file, one line each.
+
+**THREE NAMING RULES, read out of `check-review-coverage.py` itself. Break one and the stub is not
+a defect, it is INVISIBLE** - the checker skips the file and your round leaves no trace at all:
+
+- the stem must match `REVIEW.*-R<n>`, so the round number is IN the filename (`IS_REVIEW`);
+- it must NOT end in `REVIEW` and must NOT begin `PLAN-REVIEW` - both mark a document review
+  rather than a commit range, and the checker skips them (`NOT_A_COMMIT_REVIEW`);
+- ONE declaration per file. A second `REVIEW-COVERS` line in one file is refused at exit 2.
 
 `docs/reviews/check-review-coverage.py` enumerates every commit on the trunk and reports the ones
 inside no round's declared range. **It exists because 45 consecutive commits were once reviewed by
