@@ -66,6 +66,10 @@ class CheckerFailed(RuntimeError):  # noqa: N818 - a refusal, not an error
     """The checker did not run cleanly, so its report is not proof."""
 
 
+class LogError(RuntimeError):
+    """REPOINT-LOG.txt is malformed; nothing moves until it is fixed."""
+
+
 def report(sha: str) -> str:
     """The checker's own output.
 
@@ -336,27 +340,36 @@ def design_blob(sha: str) -> str:
     return done.stdout.strip() if done.returncode == 0 else ""
 
 
-def already_moved_from(sha: str) -> str | None:
-    """The log row whose base carries the same DESIGN.md as `sha`."""
+def already_moved_from(blob: str) -> str | None:
+    """The log row whose base carries the DESIGN.md blob `blob`.
+
+    A row that does not split into its four TAB-separated fields is a
+    broken instrument, refused by file and line rather than crashed
+    on (review round 4, F13): the file's header invites hand edits.
+    """
     if not LOG.exists():
         return None
-    blob = design_blob(sha)
-    for row in LOG.read_text(encoding="utf-8").splitlines():
+    for num, row in enumerate(LOG.read_text(encoding="utf-8").splitlines(), 1):
         if not row.strip() or row.startswith("#"):
             continue
-        base, logged_blob, *_ = row.split("\t")
-        if blob and blob == logged_blob:
+        parts = row.split("\t")
+        if len(parts) != 4:
+            raise LogError(
+                f"{LOG.name}:{num}: {len(parts)} field(s), expected 4 "
+                "(base, DESIGN.md blob, moved, date), TAB separated"
+            )
+        if blob and blob == parts[1]:
             return row
     return None
 
 
-def record_write(sha: str, moved: int) -> None:
+def record_write(sha: str, blob: str, moved: int) -> None:
     """Append this --write to the log, so the base cannot be reused."""
     date = subprocess.run(
         ["date", "+%Y-%m-%d"], capture_output=True, text=True, check=True
     ).stdout.strip()
     with LOG.open("a", encoding="utf-8") as fh:
-        fh.write(f"{sha}\t{design_blob(sha)}\t{moved}\t{date}\n")
+        fh.write(f"{sha}\t{blob}\t{moved}\t{date}\n")
 
 
 def main(argv: list[str]) -> int:
@@ -364,7 +377,12 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 1
     sha = argv[0]
-    prior = already_moved_from(sha)
+    blob = design_blob(sha)
+    try:
+        prior = already_moved_from(blob)
+    except LogError as exc:
+        print(f"  REFUSED: {exc}. Nothing will be repointed.")
+        return 1
     if prior:
         print(
             f"  REFUSED: docs/DESIGN.md at {sha!r} is the blob a previous --write "
@@ -415,7 +433,7 @@ def main(argv: list[str]) -> int:
     print(f"  parsed {total} MOVED citation(s) from the checker's output")
     rc = apply(moves, write="--write" in argv)
     if rc == 0 and "--write" in argv:
-        record_write(sha, total)
+        record_write(sha, blob, total)
     return rc
 
 
