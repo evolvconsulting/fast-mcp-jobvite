@@ -79,6 +79,7 @@ import repoint_exempt
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 DESIGN = REPO_ROOT / "docs" / "DESIGN.md"
 FREEZE = REPO_ROOT / "docs" / "DESIGN-FREEZE.txt"
+PYPROJECT = REPO_ROOT / "pyproject.toml"
 
 # Examples, REPOINT-EXEMPT: `DESIGN.md:603`, `DESIGN.md:918-924` - these
 # are what the pattern MATCHES, not citations of anything, so they must
@@ -94,6 +95,13 @@ def _tracked_files() -> list[pathlib.Path]:
     """Every tracked file worth scanning.
 
     `git ls-files` is the authority.
+
+    `controls()` REBINDS THIS NAME in the module globals to amputate the
+    enumeration for its negative arm, so it must stay a module-level
+    function called by name rather than captured or inlined at its call
+    sites. If that rebinding ever stops working the control reports DID
+    NOT FIRE rather than passing quietly, which was checked by breaking
+    it, so this note is a courtesy to a reader and not the safety net.
     """
     out = subprocess.run(
         ["git", "ls-files", "-z"],
@@ -371,18 +379,50 @@ def controls() -> int:
     # `check-design-citation-shape.py --controls` went 7/7 exit 0 to
     # 6/7 exit 1. Board row 23. A controls arm blind to its own
     # population certifies a checker that is scanning nothing.
+    # THE READ IS GUARDED BECAUSE A BROKEN INSTRUMENT MUST NOT WEAR A
+    # FINDING'S EXIT CODE. `_tracked_files()` runs `git ls-files` with
+    # `check=True`, so a git that cannot run raised CalledProcessError
+    # as a bare traceback at exit 1 - and 1 is this checker's code for
+    # "a citation does not resolve".
+    #
+    # AND IT NAMES MEMBERS, BECAUSE SIZE ALONE CANNOT SEE A NARROWED
+    # SELECTOR. Review round 1 dropped ".md" from _SEARCH_SUFFIXES and
+    # the real scan fell from 2101 citations across 239 files to 916
+    # across 92 with nothing going red. MY FIRST FIX FOR THAT WAS ALSO
+    # BLIND: it required every suffix in _SEARCH_SUFFIXES to appear in
+    # the enumeration, which is derived from the very declaration the
+    # mutation narrows, so it shrank with it and still read 5/5 at
+    # exit 0. Measured, not reasoned. The members below are named
+    # instead, and each is a module constant rather than a retyped
+    # path, so none of them decays on its own.
+    #
+    # WHAT THIS DOES NOT REACH, stated rather than implied: it pins
+    # .py, .md and .toml. Dropping ".yml", ".yaml" or ".sh" from the
+    # declared set is still invisible here, because this tool has no
+    # constant naming a member of those kinds.
     total += 1
-    tracked = _tracked_files()
     here = pathlib.Path(__file__).resolve()
-    if tracked and here in tracked:
-        fired += 1
-        print(f"  CONTROL the corpus is enumerated ({len(tracked)} files) -> FIRED")
-    else:
+    try:
+        tracked = _tracked_files()
+    except (OSError, subprocess.CalledProcessError) as exc:
         print(
-            f"  CONTROL the corpus is enumerated -> DID NOT FIRE "
-            f"({len(tracked)} file(s), this checker "
-            f"{'present' if here in tracked else 'MISSING'})"
+            "  CONTROL the corpus is enumerated -> DID NOT FIRE "
+            f"(git ls-files could not run, so there is no corpus: {exc})"
         )
+    else:
+        must = {here: "this checker", DESIGN: "DESIGN.md", PYPROJECT: "pyproject.toml"}
+        gone = [name for path, name in must.items() if path not in tracked]
+        if tracked and not gone:
+            fired += 1
+            print(
+                f"  CONTROL the corpus is enumerated ({len(tracked)} files, "
+                f"all {len(must)} named members present) -> FIRED"
+            )
+        else:
+            why = f"{len(tracked)} file(s)"
+            if gone:
+                why += f", MISSING: {', '.join(gone)}"
+            print(f"  CONTROL the corpus is enumerated -> DID NOT FIRE ({why})")
 
     # AND THE NEGATIVE ARM, because a control that can only pass is the
     # same defect one column over: the arm above would fire on any
@@ -391,37 +431,95 @@ def controls() -> int:
     # refuse, by the exact message rather than by a bare non-zero.
     # `--since` is given the frozen SHA, read and never retyped, so the
     # arm needs no historical commit of its own.
+    # SAME GUARD, SAME REASON. The frozen SHA is the only sha this arm
+    # can reach without retyping a historical commit, and reading it was
+    # unguarded: with docs/DESIGN-FREEZE.txt moved aside the arm raised
+    # FileNotFoundError as a bare traceback at exit 1. Reported by the
+    # template's port of this change, 8659780 on
+    # chore/carried-machinery.
     total += 1
-    real = globals()["_tracked_files"]
-    globals()["_tracked_files"] = list  # `list()` IS the empty enumeration
-    buf = io.StringIO()
     try:
-        with contextlib.redirect_stdout(buf):
-            bounds_rc = _report_bounds(len(text.splitlines()))
-            moves_rc = _report_moves(FREEZE.read_text(encoding="utf-8").strip())
-    finally:
-        globals()["_tracked_files"] = real
-    said = buf.getvalue().count(EMPTY_CORPUS)
-    if (bounds_rc, moves_rc, said) == (1, 1, 2):
-        fired += 1
-        print("  CONTROL an amputated enumeration is REFUSED by both arms -> FIRED")
-    else:
+        frozen = FREEZE.read_text(encoding="utf-8").strip()
+    except OSError as exc:
         print(
-            f"  CONTROL an amputated enumeration is REFUSED by both arms -> "
-            f"DID NOT FIRE (bounds rc={bounds_rc}, --since rc={moves_rc}, "
-            f"{said} of 2 refusals printed)"
+            "  CONTROL an amputated enumeration is REFUSED by both arms -> "
+            f"DID NOT FIRE (DESIGN-FREEZE.txt is missing, so --since has no "
+            f"sha: {exc})"
         )
+    else:
+        real = globals()["_tracked_files"]
+        globals()["_tracked_files"] = list  # `list()` IS the empty enumeration
+        buf = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(buf):
+                bounds_rc = _report_bounds(len(text.splitlines()))
+                moves_rc = _report_moves(frozen)
+        finally:
+            globals()["_tracked_files"] = real
+        said = buf.getvalue().count(EMPTY_CORPUS)
+        if (bounds_rc, moves_rc, said) == (1, 1, 2):
+            fired += 1
+            print("  CONTROL an amputated enumeration is REFUSED by both arms -> FIRED")
+        else:
+            print(
+                f"  CONTROL an amputated enumeration is REFUSED by both arms -> "
+                f"DID NOT FIRE (bounds rc={bounds_rc}, --since rc={moves_rc}, "
+                f"{said} of 2 refusals printed)"
+            )
 
     print(f"\n{fired}/{total} controls fired.")
     return 0 if fired == total else 1
 
 
 def main(argv: list[str]) -> int:
-    if "--controls" in argv:
+    # ARGV IS READ BY POSITION, NOT BY MEMBERSHIP, and review round 1
+    # found why that matters. `repoint-design-citations.py` takes its
+    # SHA positionally and shells out to `--since <sha>`, so running
+    # that tool as `--controls` built `--since --controls` here - and
+    # the old `"--controls" in argv` matched the VALUE of `--since` and
+    # ran the self-test instead of a scan. It exited 1 either way, which
+    # is how a wrong mechanism kept a right-looking exit code. `git
+    # rev-parse --controls:docs/DESIGN.md` exits 0 and echoes the string
+    # back, so the sibling tool's own blob guard never fired on it
+    # either.
+    mode = argv[0] if argv else ""
+
+    # DESIGN.md IS READ BY EVERY ARM AND WAS GUARDED BY NONE. Moving it
+    # aside gave a bare FileNotFoundError at exit 1 on all three arms,
+    # and 1 is this checker's code for "a citation does not resolve", so
+    # an instrument that could not run wore a finding's exit code. EXIT
+    # 3 is what this file already reserves for that distinction:
+    # `_report_moves` returns it for a blob git cannot read, saying
+    # "This is a BROKEN INSTRUMENT, not a finding."
+    #
+    # THE GUARD IS HERE, not at the three read sites (:299 in
+    # `_report_moves`, :336 in `controls`, and main's own), because
+    # `main` is the only entry point - `__main__` calls it and nothing
+    # imports this module - so proving the file readable once before
+    # dispatch covers every arm. It catches an unreadable-but-present
+    # file too, which a bare `exists()` test would not.
+    try:
+        design_text = DESIGN.read_text()
+    except OSError as exc:
+        if mode == "--controls":
+            print("REFUSED: docs/DESIGN.md is missing, so no control can run")
+        else:
+            print(
+                "REFUSED: docs/DESIGN.md could not be read, so nothing was "
+                f"scanned: {exc}"
+            )
+        return 3
+
+    if mode == "--controls":
         return controls()
-    if "--since" in argv:
-        return _report_moves(argv[argv.index("--since") + 1])
-    return _report_bounds(len(DESIGN.read_text().splitlines()))
+    if mode == "--since":
+        # The old form indexed past the end of argv and raised
+        # IndexError as a bare traceback; same class as the reads above.
+        if len(argv) < 2:
+            print("REFUSED: --since needs a commit-ish argument")
+            return 3
+        return _report_moves(argv[1])
+    return _report_bounds(len(design_text.splitlines()))
 
 
 if __name__ == "__main__":
