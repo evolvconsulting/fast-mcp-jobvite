@@ -91,17 +91,39 @@ _SEARCH_SUFFIXES = {".py", ".toml", ".md", ".yml", ".yaml", ".sh"}
 _SKIP_PARTS = {".git", ".venv", "venv", "__pycache__", ".ruff_cache", ".pytest_cache"}
 
 
+def _stderr_of(exc: BaseException) -> str:
+    """The captured stderr of a failed subprocess, ready to append.
+
+    `CalledProcessError.__str__` reports only "returned non-zero exit
+    status N" and drops the output entirely, so a refusal built from
+    the exception alone names the exit code and not the cause. Round 3
+    found the two refusals below doing exactly that while
+    `_report_moves` a few lines away surfaced `git show`'s stderr
+    properly. Returns "" when there is nothing to add, so the caller
+    can concatenate unconditionally.
+    """
+    text = getattr(exc, "stderr", None)
+    if isinstance(text, bytes):
+        text = text.decode("utf-8", "replace")
+    return f": {text.strip()}" if isinstance(text, str) and text.strip() else ""
+
+
 def _tracked_files() -> list[pathlib.Path]:
     """Every tracked file worth scanning.
 
     `git ls-files` is the authority.
 
-    `controls()` REBINDS THIS NAME in the module globals to amputate the
-    enumeration for its negative arm, so it must stay a module-level
-    function called by name rather than captured or inlined at its call
-    sites. If that rebinding ever stops working the control reports DID
-    NOT FIRE rather than passing quietly, which was checked by breaking
-    it, so this note is a courtesy to a reader and not the safety net.
+    THIS HAS EXACTLY ONE CALL SITE, `main`'s precondition, and every
+    arm takes the result as an argument. Round 3 found the reason:
+    a guard that proves `git --version` runs proves nothing about
+    `git ls-files`, and with only the latter broken both scan arms
+    raised a bare `CalledProcessError` at exit 1. One call site inside
+    one try/except is the shape that cannot be reached unguarded.
+
+    An earlier version was amputated for the negative control by
+    rebinding this name in the module globals. That seam is gone;
+    the control passes an empty list instead, which tests the same
+    property without a monkeypatch.
     """
     out = subprocess.run(
         ["git", "ls-files", "-z"],
@@ -150,8 +172,12 @@ EMPTY_CORPUS = (
 )
 
 
-def citations() -> list[tuple[pathlib.Path, int, int, int]]:
+def citations(
+    tracked: list[pathlib.Path],
+) -> list[tuple[pathlib.Path, int, int, int]]:
     """Every citation as (file, line-it-appears-on, start, end).
+
+    `tracked` is the enumeration `main` already ran and validated.
 
     Lines marked `REPOINT-EXEMPT` are skipped and COUNTED, so the
     exemption can never be silent - a skip nobody reports is how a
@@ -160,7 +186,7 @@ def citations() -> list[tuple[pathlib.Path, int, int, int]]:
     found: list[tuple[pathlib.Path, int, int, int]] = []
     global EXEMPT_SKIPPED
     EXEMPT_SKIPPED = 0
-    for path in _tracked_files():
+    for path in tracked:
         try:
             text = path.read_text()
         except UnicodeDecodeError:
@@ -201,8 +227,8 @@ def line_map(old_text: str, new_text: str) -> dict[int, int | None]:
     return mapping
 
 
-def _report_bounds(total_lines: int) -> int:
-    found = citations()
+def _report_bounds(total_lines: int, tracked: list[pathlib.Path]) -> int:
+    found = citations(tracked)
     if not found:
         print(EMPTY_CORPUS)
         return 1
@@ -245,7 +271,7 @@ def _report_bounds(total_lines: int) -> int:
     return 0
 
 
-def _report_moves(sha: str, new: str) -> int:
+def _report_moves(sha: str, new: str, tracked: list[pathlib.Path]) -> int:
     # `check=True` USED TO RAISE HERE, and the traceback it produced
     # cost three CI rounds to read. On a SHALLOW checkout the blob is
     # simply absent, `git show` exits 128, and CalledProcessError
@@ -300,7 +326,7 @@ def _report_moves(sha: str, new: str) -> int:
     # checkout still gets its own message and its own exit 3; above the
     # byte-identical short circuit, which answers "no citation can have
     # moved" without ever asking whether there are any.
-    found = citations()
+    found = citations(tracked)
     if not found:
         print(EMPTY_CORPUS)
         return 1
@@ -337,14 +363,16 @@ def _report_moves(sha: str, new: str) -> int:
     return 1 if (moved or broken) else 0
 
 
-def controls(text: str) -> int:
+def controls(text: str, tracked: list[pathlib.Path]) -> int:
     """Prove each check can go red, on real content.
 
-    `text` is docs/DESIGN.md, already read and validated by
-    `main`. Round 2 found the previous version re-read it here and
-    in `_report_moves`, so the claim that one guard covered three
-    read sites was true only for a file unreadable at START.
-    Taking the value makes it true, and removes two reads.
+    `text` is docs/DESIGN.md and `tracked` is the file enumeration,
+    both already obtained and validated by `main`. Round 2 found
+    this function re-reading DESIGN.md, so the claim that one guard
+    covered three read sites was true only for a file unreadable at
+    START; round 3 found the same shape in the enumeration. Taking
+    both values makes the claim true and leaves each with a single
+    guarded call site.
     """
     fired = total = 0
 
@@ -418,29 +446,28 @@ def controls(text: str) -> int:
     # is a different property and wants its own instrument rather than a
     # constant in this one. The gap is recorded rather than papered
     # over.
+    #
+    # THIS ARM NO LONGER GUARDS THE ENUMERATION and does not need to:
+    # `main` runs it before dispatch and returns 3 if it fails, so an
+    # enumeration this arm cannot trust never reaches it. That is
+    # STRONGER than the version round 2 reviewed, which reported DID
+    # NOT FIRE and carried on to print a count: a broken enumerator now
+    # produces no controls verdict at all rather than a partial one.
     total += 1
     here = pathlib.Path(__file__).resolve()
-    try:
-        tracked = _tracked_files()
-    except (OSError, subprocess.CalledProcessError) as exc:
+    must = {here: "this checker", DESIGN: "DESIGN.md", PYPROJECT: "pyproject.toml"}
+    gone = [name for path, name in must.items() if path not in tracked]
+    if tracked and not gone:
+        fired += 1
         print(
-            "  CONTROL the corpus is enumerated -> DID NOT FIRE "
-            f"(git ls-files could not run, so there is no corpus: {exc})"
+            f"  CONTROL the corpus is enumerated ({len(tracked)} files, "
+            f"all {len(must)} named members present) -> FIRED"
         )
     else:
-        must = {here: "this checker", DESIGN: "DESIGN.md", PYPROJECT: "pyproject.toml"}
-        gone = [name for path, name in must.items() if path not in tracked]
-        if tracked and not gone:
-            fired += 1
-            print(
-                f"  CONTROL the corpus is enumerated ({len(tracked)} files, "
-                f"all {len(must)} named members present) -> FIRED"
-            )
-        else:
-            why = f"{len(tracked)} file(s)"
-            if gone:
-                why += f", MISSING: {', '.join(gone)}"
-            print(f"  CONTROL the corpus is enumerated -> DID NOT FIRE ({why})")
+        why = f"{len(tracked)} file(s)"
+        if gone:
+            why += f", MISSING: {', '.join(gone)}"
+        print(f"  CONTROL the corpus is enumerated -> DID NOT FIRE ({why})")
 
     # AND THE NEGATIVE ARM, because a control that can only pass is the
     # same defect one column over: the arm above would fire on any
@@ -465,15 +492,16 @@ def controls(text: str) -> int:
             f"sha: {exc})"
         )
     else:
-        real = globals()["_tracked_files"]
-        globals()["_tracked_files"] = list  # `list()` IS the empty enumeration
+        # AN EMPTY LIST *IS* THE AMPUTATED ENUMERATION, passed straight
+        # in. The previous version rebound `_tracked_files` in the
+        # module globals to do this; round 3's fix threads the
+        # enumeration through instead, so the seam is gone and with it
+        # the risk that a future refactor captures or inlines the name
+        # and silently defeats the control.
         buf = io.StringIO()
-        try:
-            with contextlib.redirect_stdout(buf):
-                bounds_rc = _report_bounds(len(text.splitlines()))
-                moves_rc = _report_moves(frozen, text)
-        finally:
-            globals()["_tracked_files"] = real
+        with contextlib.redirect_stdout(buf):
+            bounds_rc = _report_bounds(len(text.splitlines()), [])
+            moves_rc = _report_moves(frozen, text, [])
         said = buf.getvalue().count(EMPTY_CORPUS)
         if (bounds_rc, moves_rc, said) == (1, 1, 2):
             fired += 1
@@ -510,12 +538,18 @@ def main(argv: list[str]) -> int:
     # `_report_moves` returns it for a blob git cannot read, saying
     # "This is a BROKEN INSTRUMENT, not a finding."
     #
-    # THE GUARD IS HERE, not at the three read sites (:299 in
-    # `_report_moves`, :336 in `controls`, and main's own), because
-    # `main` is the only entry point - `__main__` calls it and nothing
-    # imports this module - so proving the file readable once before
-    # dispatch covers every arm. It catches an unreadable-but-present
-    # file too, which a bare `exists()` test would not.
+    # THE GUARD IS HERE, and after round 2's fold there is exactly one
+    # read: `controls` and `_report_moves` take the text rather than
+    # re-reading it. `main` is the only entry point - `__main__` calls
+    # it and nothing imports this module - so proving the file readable
+    # once before dispatch covers every arm. It catches an
+    # unreadable-but-present file too, which a bare `exists()` test
+    # would not.
+    #
+    # This paragraph named "the three read sites (:299 ..., :336 ...)"
+    # until round 3; the fold that removed two of them left the
+    # sentence describing a file that no longer existed, which is the
+    # decay this repository rewrites in place rather than annotating.
     try:
         design_text = DESIGN.read_text()
     except OSError as exc:
@@ -531,38 +565,44 @@ def main(argv: list[str]) -> int:
             )
         return 3
 
-    # AND GIT MUST BE RUNNABLE, which round 2 found the round-1 guard
-    # did not establish. That guard wrapped ONE call site, the positive
-    # control arm's `_tracked_files()`. With `git` absent from PATH
-    # entirely - not a stub that runs and fails, which is what round 1
-    # measured - the two scan arms and the NEGATIVE control arm still
-    # raised a bare `FileNotFoundError: [Errno 2] No such file or
-    # directory: 'git'` at exit 1. A guard at the self-test call site
-    # and not at the real ones is the defect this whole branch is about,
-    # committed by its own fix.
+    # AND THE ENUMERATION MUST RUN, which is the third turn of one
+    # screw and the last one it has. Round 1 guarded ONE call site, the
+    # positive control arm's. Round 2 found the two scan arms and the
+    # negative arm still crashed when `git` was absent, and added a
+    # `git --version` probe here. Round 3 found that probe proves the
+    # BINARY LAUNCHES and nothing about the CALL: with a git whose
+    # `ls-files` fails and whose other subcommands work, both scan arms
+    # raised a bare `CalledProcessError` at exit 1 again. Reproduced
+    # against the real `/usr/bin/git` under a bogus `GIT_DIR`, with no
+    # stub at all: `git --version` exits 0, `git ls-files` exits 128.
+    #
+    # A PROXY FOR A DEPENDENCY IS NOT THE DEPENDENCY. So this runs the
+    # actual enumeration, once, and every arm takes the result. There
+    # is no second, independently-failing call left to guard.
     #
     # SAME CAVEAT AS THE READ ABOVE, stated rather than implied: this
-    # proves git was runnable when the run started. A git that
-    # disappears mid-run still crashes at whichever site reaches it
-    # next, exactly as a DESIGN.md deleted mid-run would.
+    # proves the enumeration ran when the run started. Nothing here
+    # re-runs it, so unlike the previous two versions there is no later
+    # moment at which the same command can fail differently.
     try:
-        subprocess.run(
-            ["git", "--version"], capture_output=True, check=True, cwd=REPO_ROOT
-        )
+        tracked = _tracked_files()
     except (OSError, subprocess.CalledProcessError) as exc:
-        print(f"REFUSED: git could not be run, so nothing can be enumerated: {exc}")
+        print(
+            "REFUSED: the tracked-file enumeration could not run, so "
+            f"nothing can be scanned: {exc}{_stderr_of(exc)}"
+        )
         return 3
 
     if mode == "--controls":
-        return controls(design_text)
+        return controls(design_text, tracked)
     if mode == "--since":
         # The old form indexed past the end of argv and raised
         # IndexError as a bare traceback; same class as the reads above.
         if len(argv) < 2:
             print("REFUSED: --since needs a commit-ish argument")
             return 3
-        return _report_moves(argv[1], design_text)
-    return _report_bounds(len(design_text.splitlines()))
+        return _report_moves(argv[1], design_text, tracked)
+    return _report_bounds(len(design_text.splitlines()), tracked)
 
 
 if __name__ == "__main__":
