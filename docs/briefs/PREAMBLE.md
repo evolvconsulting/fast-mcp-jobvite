@@ -176,6 +176,18 @@ Two channels, both required. Your final Agent-tool output does NOT reach whoever
 
 1. **Your report, committed on your branch**, at the path your brief names. Never only a worktree,
    never `/tmp`: a 48KB report with nineteen findings was destroyed exactly that way.
+   **IF YOU HAVE NO BRANCH, THIS BULLET IS NOT YOURS AND YOU MUST NOT INVENT ONE.** A nested
+   reviewer commits nothing; its prose report is a file under the operations repository and what
+   lands in this repository is the one-line stub, committed by whoever dispatched the round. So
+   the durability this bullet promises is, for a review round, somebody else's obligation and not
+   a thing you can discharge.
+   **MEASURED, AND IT IS NOT REASSURING** (review round 4, 2026-09-09): all seven
+   `reviews/REVIEW-jobvite-*.md` files from this task were untracked in the operations repository,
+   `git status --porcelain` reporting `??` for every one and `git log` reporting zero commits
+   touching any of them. Written, delivered, read, and one `rm -rf` from gone: the same failure
+   this bullet exists to prevent, one repository over. **A file in a git repository is not a
+   committed file**, and nothing in this document, the protocol, or any brief on this task told
+   anyone to commit them.
 2. **`SendMessage` to the agent that dispatched you.** A sub-orchestrator answers the
    super-orchestrator, `to: "team-lead"`; a worker or a reviewer answers its own parent, by that
    agent's name, and its brief names it. **`to: "main"` does NOT work** - it resolves to you, the
@@ -205,8 +217,16 @@ that was never sent.
 > teammates - the team roster is flat"), which says nothing about message delivery, and it was
 > never tested: its author had written "do NOT call SendMessage" into all six of its reviewer
 > briefs, so no attempt was ever made and no evidence could arrive. A sibling lane then measured
-> the opposite. **A brief that forbids the thing in question destroys the evidence for it**, and a
-> citation added to an untested sentence makes it better-sourced rather than true.
+> the opposite. **A brief that forbids the thing in question destroys the evidence for it**
+> (`PROTOCOL-super-orchestrators.md` section 6, J-0139 and K-0105, which state the rule in those
+> words and name this task as where it was learned), and a citation added to an untested sentence
+> makes it better-sourced rather than true.
+>
+> **This sentence was itself uncited until review round 4**, thirteen minutes after the protocol
+> draft carrying the citation had landed. That is the THIRD uncited claim in this one paragraph:
+> round 2 found the original, round 3 found its replacement, round 4 found the lesson drawn from
+> both. A paragraph about unevidenced assertions is exactly where the next one goes unnoticed, so
+> read this one twice.
 
 Inbound messages reach you only when you go IDLE - not between two tool calls. If you want to stay
 reachable, break long work into turns.
