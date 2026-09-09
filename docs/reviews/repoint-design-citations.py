@@ -41,6 +41,13 @@ import repoint_exempt
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 CHECKER = REPO_ROOT / "docs" / "reviews" / "check-design-citations.py"
+#: Every `--write` appends a row here: the base it moved FROM, the
+#: DESIGN.md blob at that base, how many citations moved, the date. A
+#: later run whose base carries the SAME blob would report the same
+#: moves again and move every LIVE citation a second time, to a wrong
+#: target: review round 3 of the 4.0.3 branch measured 73 such
+#: re-reports after the first batch. That base is refused.
+LOG = REPO_ROOT / "docs" / "reviews" / "REPOINT-LOG.txt"
 
 #: {(old start, old end): (new start, new end)} for ONE cited line
 Pairs = dict[tuple[int, int], tuple[int, int]]
@@ -243,9 +250,11 @@ def parse(
         key = (m["file"], int(m["lineno"]))
         moves.setdefault(key, {})[(old_s, old_e)] = (new_s, new_e)
     if records:
-        print(f"\n{len(records)} citation(s) in docs/adr/ are RECORDS and are")
-        print("NOT repointed - see docs/adr/README.md. This is a deliberate")
-        print("skip, printed so it cannot be mistaken for the tool failing:")
+        print(f"\n{len(records)} citation(s) sit in RECORD paths and are NOT")
+        print("repointed (docs/adr/, docs/plans/, docs/worklogs/, docs/briefs/,")
+        print("docs/archive/, and documents under docs/reviews/; the ruling is")
+        print("above LIVE_PREFIXES). A deliberate skip, printed so it cannot be")
+        print("mistaken for the tool failing:")
         print("\n".join(records))
     return moves, unreadable, unruled
 
@@ -315,11 +324,57 @@ def apply(moves: MoveMap, write: bool) -> int:
     return 0
 
 
+def design_blob(sha: str) -> str:
+    """The blob id of docs/DESIGN.md at `sha`, or "" if git cannot."""
+    done = subprocess.run(
+        ["git", "rev-parse", f"{sha}:docs/DESIGN.md"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    return done.stdout.strip() if done.returncode == 0 else ""
+
+
+def already_moved_from(sha: str) -> str | None:
+    """The log row whose base carries the same DESIGN.md as `sha`."""
+    if not LOG.exists():
+        return None
+    blob = design_blob(sha)
+    for row in LOG.read_text(encoding="utf-8").splitlines():
+        if not row.strip() or row.startswith("#"):
+            continue
+        base, logged_blob, *_ = row.split("\t")
+        if blob and blob == logged_blob:
+            return row
+    return None
+
+
+def record_write(sha: str, moved: int) -> None:
+    """Append this --write to the log, so the base cannot be reused."""
+    date = subprocess.run(
+        ["date", "+%Y-%m-%d"], capture_output=True, text=True, check=True
+    ).stdout.strip()
+    with LOG.open("a", encoding="utf-8") as fh:
+        fh.write(f"{sha}\t{design_blob(sha)}\t{moved}\t{date}\n")
+
+
 def main(argv: list[str]) -> int:
     if not argv:
         print(__doc__)
         return 1
     sha = argv[0]
+    prior = already_moved_from(sha)
+    if prior:
+        print(
+            f"  REFUSED: docs/DESIGN.md at {sha!r} is the blob a previous --write "
+            "already repointed FROM:\n"
+            f"  {prior}\n"
+            "  A second run from that base moves every LIVE citation again, to a "
+            "wrong target. Use --since a base at or after the commit that carried "
+            "that write."
+        )
+        return 1
     try:
         text = report(sha)
     except CheckerFailed as exc:
@@ -358,7 +413,10 @@ def main(argv: list[str]) -> int:
         )
         return 1
     print(f"  parsed {total} MOVED citation(s) from the checker's output")
-    return apply(moves, write="--write" in argv)
+    rc = apply(moves, write="--write" in argv)
+    if rc == 0 and "--write" in argv:
+        record_write(sha, total)
+    return rc
 
 
 if __name__ == "__main__":

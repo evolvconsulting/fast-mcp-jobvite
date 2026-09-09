@@ -37,12 +37,12 @@ belongs to THAT document, never to this one - both files number their sections f
 | **Required config** | pydantic-settings with non-defaulted fields. `fastmcp.json` **cannot** express a required env var and fails *silently*. **[FASTMCP-SPIKE-4.md §10]** |
 | **Mandatory workaround** | An **explicit** SIGTERM handler that raises `KeyboardInterrupt`, plus `os._exit(0)` after `run()` returns — or lifespan teardown never runs on container stop, and on stdio the process survives SIGTERM entirely. Do **not** use `signal.getsignal(SIGINT)`: it can install *ignore SIGTERM*. **[FASTMCP-SPIKE-4.md §19.5]** |
 
-### The httpx → httpx2 decision (open)
+### The httpx → httpx2 decision (settled by ADR-0007)
 
 4.0 replaces `httpx` with **`httpx2`**, which reaches the public API (`Client.__init__` is typed
 `auth: httpx2.Auth`). `httpx` is not installed at all. The two **do** coexist as separate modules,
 so our Jobvite client may use either — but `except httpx.HTTPError` will never catch a
-FastMCP-raised exception. Keep every `except httpx.*` in one module. **[FASTMCP-SPIKE-4.md §1.2]**
+FastMCP-raised exception; ADR-0007 chose `httpx2` and dropped the one-module confinement rule as unnecessary (design rule 3 below). **[FASTMCP-SPIKE-4.md §1.2]**
 
 ### Top 5 things `fast-mcp-jira` does that we must not copy
 

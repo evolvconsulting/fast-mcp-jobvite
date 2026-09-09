@@ -54,7 +54,9 @@ Everything else stays UNRULED and refused, as before.
 python3 docs/reviews/repoint-design-citations.py a9a85ed            (dry run: 0 UNRULED)
 python3 docs/reviews/repoint-design-citations.py a9a85ed --write
   69 citation(s) repointed across 27 file(s)
-  163 citation(s) in docs/adr/ are RECORDS and are NOT repointed
+  163 citation(s) in RECORD paths are NOT repointed (14 docs/adr/, 85 docs/reviews/*.md,
+  33 docs/worklogs/, 25 docs/plans/, 4 docs/briefs/, 2 docs/archive/; the tool's print
+  string said "in docs/adr/" at the time, false as worded, fixed after round 3)
 ```
 
 Files the tool changed: `.github/workflows/ci.yml`, `.pre-commit-config.yaml`,
@@ -72,7 +74,7 @@ Files the tool changed: `.github/workflows/ci.yml`, `.pre-commit-config.yaml`,
 | `pyproject.toml:23` | `1486-1488` | `1487-1490` | the `mcp` reason moved two lines down |
 | `tests/test_manifest.py:6` | `1485-1488` | `1485-1490` | the sentence grew by two lines |
 | `tests/test_manifest.py:71` | `1499-1501`, "states three pins" | `1507-1508`, "states two pins; the block held three until ADR-0036 removed the second" | the block has two pins now |
-| `tests/test_manifest.py:113`, `:153`, `:188` | `1518-1520` | `1525-1530` | the prerelease paragraph was rewritten for the GA pin |
+| `tests/test_manifest.py:114`, `:154`, `:189` | `1518-1520` | `1525-1530` | the prerelease paragraph was rewritten for the GA pin |
 | `.pre-commit-config.yaml:59` | FASTMCP.md `354` and `584` | `367` and `597` | round 2's F6 |
 | `.github/workflows/mirror.yml:69` | FASTMCP.md `845` | `855` | round 2's F6 |
 
@@ -90,13 +92,39 @@ against a base at or after this commit reads them clean.
 python3 docs/reviews/check-design-citations.py                      rc=0
 python3 docs/reviews/check-design-citation-shape.py                 rc=0
 python3 scripts/check-harness-anchors.py --self-check --floor 464   rc=0  (all 464 anchors resolve)
-python3 docs/reviews/check-design-citations.py --since a9a85ed      MOVED 236 (records, left), BROKEN 19 (17 records, 2 by construction)
+python3 docs/reviews/check-design-citations.py --since a9a85ed      MOVED 236 (163 records, left; 73 LIVE citations the batch
+                                                                    had already moved, which a run from the OLD base re-reports
+                                                                    as moves to wrong targets, so that base is refused now),
+                                                                    BROKEN 19 (17 records, 2 by construction)
 uv run --frozen ruff check .                                        rc=0
 uv run --frozen ruff format --check .                               rc=0
 ```
 
 The whole `test` job is replayed over the committed tree before the branch is pushed, and the
 replayer's own verdict line is quoted in the commit's notebook entry.
+
+## Corrected after review round 3 (`consensus/JACK-review-jobvite-403-R3.md`)
+
+- F8 (High): the machine batch moved four keys of `docs/reviews/probe-218-frame-census.py`'s
+  `ADJUDICATED` dict (`1846`, `1846`, `1848`, `1549-1564`). Those keys are the plan's citations
+  as written at blob `c15b138`, matched by exact lookup against `docs/plans/IMPLEMENTATION-PLAN.md`,
+  a RECORD that keeps the old values; moved, the four lookups went silent. Reverted, each line
+  marked `REPOINT-EXEMPT` as its `:353` sibling already was, and three register rows added (the
+  two `1846` keys share one). The tool is not idempotent against the base it has already moved
+  from: a second `--since a9a85ed --write` would have moved every LIVE citation again (73 of
+  them). `docs/reviews/REPOINT-LOG.txt` now records each write's base and DESIGN.md blob, and
+  the tool refuses a base whose blob it has already moved from. Measured: `a9a85ed` refused;
+  `3ba2a3d` (the current design) not refused, nothing to move.
+- F9 (Medium): "163 citations in docs/adr/" was the tool's hardcoded print string, written when
+  docs/adr/ and docs/plans/ were the only RECORD prefixes; 14 of the 163 are docs/adr/. The
+  string and this worklog now say RECORD paths.
+- F10 (High): a second instance of the dropped one-module rule, `docs/research/FASTMCP.md`'s
+  section "The httpx to httpx2 decision", still titled "(open)", is rewritten to name ADR-0007
+  and point at design rule 3.
+- F11 (Nit): the dropped-rule quote sits in ADR-0007's Consequences, not its Decision; the
+  commit that fixed rule 3 and the notebook said Decision.
+- F12 (Low): the hand-repoint table above cited `tests/test_manifest.py:113`, `:153`, `:188`;
+  the earlier hand edit in that file had shifted them to 114, 154, 189. Corrected.
 
 ## Not done here
 
