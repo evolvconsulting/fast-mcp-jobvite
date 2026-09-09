@@ -15,6 +15,12 @@ The shared task-list tools are DEFERRED, not absent - they will not be in your o
 Claim with `TaskUpdate` (`owner: "<your-agent-name>"`, `status: "in_progress"`), and mark it
 `completed` when you finish.
 
+**DEFERRED IS NOT THE SAME AS PRESENT, and one whole population has no board at all.** A nested
+agent - a reviewer or worker spawned by a sub-orchestrator rather than by the super-orchestrator -
+gets `No matching deferred tools found` from that search. That is a fact about where you sit, not
+a fault and not a broken tool. If your brief handed you no task id, you have no row to claim:
+claim nothing, and deliver by the exception under "How to deliver".
+
 **Work you find outside your scope is REPORTED - never a silent fix and never a silent drop.**
 Whether you also file it as a task depends on a mandate your brief either grants or does not:
 a REVIEWER's brief says findings go on the board and they do; a sub-orchestrator's does not,
@@ -171,6 +177,14 @@ Two channels, both required. Your final Agent-tool output does NOT reach whoever
    agent's name, and its brief names it. **`to: "main"` does NOT work** - it resolves to you, the
    sender, and errors. Too long for one call? Send numbered parts, never truncate.
 
+**THE EXCEPTION, and it is a population rather than an edge case.** Both rules above are written
+for a NAMED teammate. An agent spawned as a NESTED, UNNAMED subagent is in the opposite position on
+both counts: its final Agent-tool output IS returned to whoever spawned it, and `SendMessage`
+cannot reach that parent at all, because a parent is not on a nested agent's roster. A reviewer
+dispatched by a sub-orchestrator is normally exactly this. If that is you, your two channels are
+the report FILE and your final output, and calling `SendMessage` sends your round into the dark.
+**Your brief says which of the two you are; if it does not, ask before you deliver.**
+
 Inbound messages reach you only when you go IDLE - not between two tool calls. If you want to stay
 reachable, break long work into turns.
 
@@ -185,8 +199,8 @@ evolv operations repository. Where you write is therefore decided by what the do
   RECORD of how it used to be done; they are not a location to add to.
 - **A REVIEW round's prose is not in this repository either.** It is
   `reviews/REVIEW-<repo or subject>-R<n>.md` under evolv, and what lands here is ONE STUB per
-  round, described below. This is the change that removed the prose which had driven `docs/` to
-  5.65 times the size of source.
+  round, described below. This is the change that takes the prose out of a product repository,
+  which is what had grown `docs/` here to several times the size of `src/` and `tests/` together.
 - **A WORKLOG - a measurement report, and not a review - still lands in `docs/worklogs/`** on your
   branch, with a byte-identical copy under evolv. The PROTOCOL left this one for this amendment to
   settle (section 5, K-0060 condition 2) and this is the settlement: it does not move. The copy is
@@ -206,9 +220,12 @@ directly under the heading so it renders as nothing, for the human and for the r
 
     <!-- REVIEW-COVERS: <base>..<head> -->
 
-And this repository gets that SAME LINE and nothing else, as a one-line stub, for the checker:
+And this repository gets that SAME LINE and nothing else, in a file of its own, for the checker.
+The path, and then the whole of the file's content:
 
     docs/reviews/REVIEW-<subject>-R<n>.md
+
+    <!-- REVIEW-COVERS: <base>..<head> -->
 
 `docs/reviews/REVIEW-403-R1.md` through `-R6.md` are six worked examples, one file, one line each.
 
