@@ -690,7 +690,7 @@ prerelease = "explicit"   # inert at a GA pin; refuses a future prerelease nobod
 
 1. Never use `exclude_args=`, `serializer=`, `sampling_handler=`, `ctx.sample*`, `ctx.list_roots()` — all removed in 4.0, confirmed by signature.
 2. If we call `ctx.elicit()`, always pass `response_type`.
-3. The HTTP client is `httpx2`, the one FastMCP ships (ADR-0007). Its exception handling lives in **one module**, `services/jobvite_client.py` (the `except (httpx2.HTTPError, ...)` clause and the `isinstance` classification into `JobviteUnavailableError`); `utils/redaction.py` touches `httpx2` only for its logger. Keep it that way, so any transport change stays a one-file edit.
+3. The HTTP client is `httpx2`, the one FastMCP ships (ADR-0007). The one-module confinement rule that used to sit here, and its AST test, were **dropped by ADR-0007 as unnecessary**: adopting `httpx2` removed the hazard the rule guarded (an `except httpx.HTTPError` that could never catch a FastMCP-raised exception) rather than guarding it. As a description, not a rule: today the `httpx2` exception handling sits in `services/jobvite_client.py` (the `except (httpx2.HTTPError, ...)` clause and the `isinstance` classification into `JobviteUnavailableError`), and `utils/redaction.py` touches `httpx2` only for its logger.
 4. Use `mcp.mount(namespace=...)` semantics from day one if we ever compose servers.
 5. Pin `mcp` alongside `fastmcp`. The one 4.0 defect we found (§8, `ResponseLimitingMiddleware`) was a **regression caused by the `mcp` 1.x → 2.x bump underneath unchanged middleware code** — the characteristic hazard of early adoption.
 
