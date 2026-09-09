@@ -178,13 +178,13 @@ Two channels, both required. Your final Agent-tool output does NOT reach whoever
    never `/tmp`: a 48KB report with nineteen findings was destroyed exactly that way.
    **IF YOU HAVE NO BRANCH, THIS BULLET IS NOT YOURS AND YOU MUST NOT INVENT ONE.** A nested
    reviewer commits nothing; its prose report is a file under the operations repository and what
-   lands in this repository is the one-line stub, committed by whoever dispatched the round. So
+   lands in this repository is the one-line stub, committed by the super-orchestrator. So
    the durability this bullet promises is, for a review round, somebody else's obligation and not
    a thing you can discharge.
    **A reviewer's prose lives under the operations repository's `reviews/` and is committed there
-   by whoever dispatched the round, when the round lands**
-   (`PROTOCOL-super-orchestrators.md` section 7). Measured 2026-09-09: seven review reports of
-   this task sat untracked until the dispatcher committed them, which is the failure this rule
+   by the super-orchestrator, when the round lands**
+   (`PROTOCOL-super-orchestrators.md` section 7). Measured 2026-09-09: the review reports of this
+   task sat untracked until the super-orchestrator committed them, which is the failure this rule
    exists to prevent. **A file in a git repository is not a committed file.**
 2. **`SendMessage` to the agent that dispatched you.** A sub-orchestrator answers the
    super-orchestrator, `to: "team-lead"`; a worker or a reviewer answers its own parent, by that
