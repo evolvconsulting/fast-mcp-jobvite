@@ -245,7 +245,7 @@ def _report_bounds(total_lines: int) -> int:
     return 0
 
 
-def _report_moves(sha: str) -> int:
+def _report_moves(sha: str, new: str) -> int:
     # `check=True` USED TO RAISE HERE, and the traceback it produced
     # cost three CI rounds to read. On a SHALLOW checkout the blob is
     # simply absent, `git show` exits 128, and CalledProcessError
@@ -304,7 +304,6 @@ def _report_moves(sha: str) -> int:
     if not found:
         print(EMPTY_CORPUS)
         return 1
-    new = DESIGN.read_text()
     if old == new:
         print(f"DESIGN.md is byte-identical to {sha}. No citation can have moved.")
         return 0
@@ -338,10 +337,16 @@ def _report_moves(sha: str) -> int:
     return 1 if (moved or broken) else 0
 
 
-def controls() -> int:
-    """Prove each check can go red, on real content."""
+def controls(text: str) -> int:
+    """Prove each check can go red, on real content.
+
+    `text` is docs/DESIGN.md, already read and validated by
+    `main`. Round 2 found the previous version re-read it here and
+    in `_report_moves`, so the claim that one guard covered three
+    read sites was true only for a file unreadable at START.
+    Taking the value makes it true, and removes two reads.
+    """
     fired = total = 0
-    text = DESIGN.read_text()
 
     total += 1
     mapping = line_map(text, "inserted\n" + text)
@@ -396,10 +401,23 @@ def controls() -> int:
     # instead, and each is a module constant rather than a retyped
     # path, so none of them decays on its own.
     #
-    # WHAT THIS DOES NOT REACH, stated rather than implied: it pins
-    # .py, .md and .toml. Dropping ".yml", ".yaml" or ".sh" from the
-    # declared set is still invisible here, because this tool has no
-    # constant naming a member of those kinds.
+    # WHAT THIS DOES NOT REACH, and round 2 measured it wider than the
+    # first statement of it admitted. This control proves the
+    # enumeration RUNS and REACHES three named members. It does not
+    # BOUND the corpus, so any narrowing that keeps those three is
+    # invisible to it: dropping ".yml", ".yaml" or ".sh" from the
+    # declared suffixes, and also a widened `_SKIP_PARTS`. Measured:
+    # excluding five of this repository's own RECORD directories took
+    # the corpus from 557 files to 347 and the citations from 2101 to
+    # 1561, a quarter of them gone, while this arm still printed "5/5
+    # controls fired." at exit 0.
+    #
+    # NO FLOOR IS ADDED FOR IT, deliberately. A count here would be a
+    # second copy of a number that moves with every commit, which is the
+    # decay this repository has paid for repeatedly; bounding the corpus
+    # is a different property and wants its own instrument rather than a
+    # constant in this one. The gap is recorded rather than papered
+    # over.
     total += 1
     here = pathlib.Path(__file__).resolve()
     try:
@@ -453,7 +471,7 @@ def controls() -> int:
         try:
             with contextlib.redirect_stdout(buf):
                 bounds_rc = _report_bounds(len(text.splitlines()))
-                moves_rc = _report_moves(frozen)
+                moves_rc = _report_moves(frozen, text)
         finally:
             globals()["_tracked_files"] = real
         said = buf.getvalue().count(EMPTY_CORPUS)
@@ -513,15 +531,37 @@ def main(argv: list[str]) -> int:
             )
         return 3
 
+    # AND GIT MUST BE RUNNABLE, which round 2 found the round-1 guard
+    # did not establish. That guard wrapped ONE call site, the positive
+    # control arm's `_tracked_files()`. With `git` absent from PATH
+    # entirely - not a stub that runs and fails, which is what round 1
+    # measured - the two scan arms and the NEGATIVE control arm still
+    # raised a bare `FileNotFoundError: [Errno 2] No such file or
+    # directory: 'git'` at exit 1. A guard at the self-test call site
+    # and not at the real ones is the defect this whole branch is about,
+    # committed by its own fix.
+    #
+    # SAME CAVEAT AS THE READ ABOVE, stated rather than implied: this
+    # proves git was runnable when the run started. A git that
+    # disappears mid-run still crashes at whichever site reaches it
+    # next, exactly as a DESIGN.md deleted mid-run would.
+    try:
+        subprocess.run(
+            ["git", "--version"], capture_output=True, check=True, cwd=REPO_ROOT
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        print(f"REFUSED: git could not be run, so nothing can be enumerated: {exc}")
+        return 3
+
     if mode == "--controls":
-        return controls()
+        return controls(design_text)
     if mode == "--since":
         # The old form indexed past the end of argv and raised
         # IndexError as a bare traceback; same class as the reads above.
         if len(argv) < 2:
             print("REFUSED: --since needs a commit-ish argument")
             return 3
-        return _report_moves(argv[1])
+        return _report_moves(argv[1], design_text)
     return _report_bounds(len(design_text.splitlines()))
 
 
