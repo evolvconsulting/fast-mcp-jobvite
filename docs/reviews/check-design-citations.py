@@ -502,7 +502,10 @@ def main(argv: list[str]) -> int:
         design_text = DESIGN.read_text()
     except OSError as exc:
         if mode == "--controls":
-            print("REFUSED: docs/DESIGN.md is missing, so no control can run")
+            print(
+                "REFUSED: docs/DESIGN.md could not be read, so no control "
+                f"can run: {exc}"
+            )
         else:
             print(
                 "REFUSED: docs/DESIGN.md could not be read, so nothing was "
