@@ -181,13 +181,11 @@ Two channels, both required. Your final Agent-tool output does NOT reach whoever
    lands in this repository is the one-line stub, committed by whoever dispatched the round. So
    the durability this bullet promises is, for a review round, somebody else's obligation and not
    a thing you can discharge.
-   **MEASURED, AND IT IS NOT REASSURING** (review round 4, 2026-09-09): all seven
-   `reviews/REVIEW-jobvite-*.md` files from this task were untracked in the operations repository,
-   `git status --porcelain` reporting `??` for every one and `git log` reporting zero commits
-   touching any of them. Written, delivered, read, and one `rm -rf` from gone: the same failure
-   this bullet exists to prevent, one repository over. **A file in a git repository is not a
-   committed file**, and nothing in this document, the protocol, or any brief on this task told
-   anyone to commit them.
+   **A reviewer's prose lives under the operations repository's `reviews/` and is committed there
+   by whoever dispatched the round, when the round lands**
+   (`PROTOCOL-super-orchestrators.md` section 7). Measured 2026-09-09: seven review reports of
+   this task sat untracked until the dispatcher committed them, which is the failure this rule
+   exists to prevent. **A file in a git repository is not a committed file.**
 2. **`SendMessage` to the agent that dispatched you.** A sub-orchestrator answers the
    super-orchestrator, `to: "team-lead"`; a worker or a reviewer answers its own parent, by that
    agent's name, and its brief names it. **`to: "main"` does NOT work** - it resolves to you, the
@@ -200,8 +198,8 @@ reviewer dispatched by a sub-orchestrator is a NESTED, UNNAMED subagent, and its
 output IS returned to whoever spawned it rather than vanishing. **That returned output plus the
 report FILE are your deliverable.** `SendMessage` may ALSO reach your parent - measured arriving,
 addressed by name in the `to` field and surfacing at the parent tagged by the sender's agent id
-(`PROTOCOL-super-orchestrators.md` section 5, J-0138, and K-0105 correcting K-0099) - so treat it
-as a second copy and never as the only one.
+(`PROTOCOL-super-orchestrators.md` section 5, J-0138 and J-0141 for two lanes' measurements;
+K-0105 correcting K-0099) - so treat it as a second copy and never as the only one.
 
 **IF YOUR BRIEF DOES NOT SAY WHICH KIND YOU ARE, DELIVER BY BOTH.** Asking is not available to
 you, because the channel you would ask on is the one in doubt, so this is a default rather than a
@@ -211,22 +209,11 @@ named teammate gets the task tools. **Record in the file which population you be
 even though you acted on both, so the next reader can tell a message that went missing from one
 that was never sent.
 
-> **A WARNING ABOUT THIS PARAGRAPH'S OWN HISTORY, because it is the failure it now guards against.**
-> An earlier version of these lines said flatly that `SendMessage` "cannot reach that parent at
-> all". That was INFERRED from a refusal to SPAWN a named teammate ("Teammates cannot spawn other
-> teammates - the team roster is flat"), which says nothing about message delivery, and it was
-> never tested: its author had written "do NOT call SendMessage" into all six of its reviewer
-> briefs, so no attempt was ever made and no evidence could arrive. A sibling lane then measured
-> the opposite. **A brief that forbids the thing in question destroys the evidence for it**
-> (`PROTOCOL-super-orchestrators.md` section 6, J-0139 and K-0105, which state the rule in those
-> words and name this task as where it was learned), and a citation added to an untested sentence
-> makes it better-sourced rather than true.
->
-> **This sentence was itself uncited until review round 4**, thirteen minutes after the protocol
-> draft carrying the citation had landed. That is the THIRD uncited claim in this one paragraph:
-> round 2 found the original, round 3 found its replacement, round 4 found the lesson drawn from
-> both. A paragraph about unevidenced assertions is exactly where the next one goes unnoticed, so
-> read this one twice.
+**AND IF A BRIEF TELLS YOU NOT TO TRY A CHANNEL, THAT IS NOT EVIDENCE THE CHANNEL FAILS.** A brief
+that forbids the attempt destroys the evidence for it (`PROTOCOL-super-orchestrators.md` section 6
+and J-0139, which state the rule in those words; K-0105 is the sibling lane's measurement that
+first exposed the gap). Report the prohibition IN YOUR RETURNED OUTPUT to whoever dispatched you,
+which is the one route no brief can take away, and deliver by the file as well.
 
 Inbound messages reach you only when you go IDLE - not between two tool calls. If you want to stay
 reachable, break long work into turns.
@@ -282,6 +269,15 @@ The path, and then the whole of the file's content:
     <!-- REVIEW-COVERS: <base>..<head> -->
 
 `docs/reviews/REVIEW-403-R1.md` through `-R6.md` are six worked examples, one file, one line each.
+
+**THE STUBS LAND AS THE BRANCH'S LAST COMMIT, AND THAT COMMIT TOUCHES NOTHING ELSE.** That is what
+makes it, by construction, the one commit no round reads
+(`PROTOCOL-super-orchestrators.md` section 7, K-0088 ruling 1). **Nothing the last round found is
+folded into it**: a Low is folded on an ordinary commit and gets one more round, and a Nit is named
+in the pull request body and tracked on the board. Bundling either one puts unreviewed work into
+the commit whose whole purpose is to be the reviewed set's receipt. Worked example in this
+repository, which `git show --stat` will confirm lists two one-line files and nothing else:
+`b6afce2`, "the review stubs for rounds 5 and 6, the last commit before the push".
 
 **THREE NAMING RULES, read out of `check-review-coverage.py` itself. Break one and the stub is not
 a defect, it is INVISIBLE** - the checker skips the file and your round leaves no trace at all:
