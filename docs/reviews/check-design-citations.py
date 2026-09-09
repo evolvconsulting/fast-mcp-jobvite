@@ -73,6 +73,7 @@ import pathlib
 import re
 import subprocess
 import sys
+import traceback
 
 import repoint_exempt
 
@@ -107,7 +108,7 @@ class GitError(Exception):
 
 
 def _git(*args: str) -> str:
-    """EVERY git call goes through here. Two modes, one exit code.
+    """EVERY git call goes through here. Three modes, one exit code.
 
     Tier 0's ruling, after the template's copy measured the half this
     file had missed (634ef4b on chore/carried-machinery): converting
@@ -134,6 +135,14 @@ def _git(*args: str) -> str:
         )
     except OSError as exc:
         raise GitError(f"{printable} could not be run at all: {exc}") from exc
+    except UnicodeDecodeError as exc:
+        # THE THIRD MODE, found by review round 4. `text=True` makes
+        # `subprocess.run` decode, so git emitting bytes that are not
+        # UTF-8 raises here - neither OSError nor CalledProcessError,
+        # and so straight past a guard that names those two. The
+        # docstring above said "two modes" and was wrong about the
+        # function directly beneath it.
+        raise GitError(f"{printable} ran but its output is not UTF-8: {exc}") from exc
     if done.returncode != 0:
         detail = done.stderr.strip() or "(git printed nothing on stderr)"
         raise GitError(
@@ -539,6 +548,19 @@ def controls(text: str, tracked: list[pathlib.Path]) -> int:
         if (bounds_rc, moves_rc, said) == (1, 1, 2):
             fired += 1
             print("  CONTROL an amputated enumeration is REFUSED by both arms -> FIRED")
+        elif moves_rc == 3:
+            # ITS OWN PRECONDITION, CLASSIFIED THE SAME WAY. rc=3 from
+            # `_report_moves` means git could not produce the frozen
+            # blob, so the `--since` half never ran and this arm cannot
+            # establish its property. Round 4 found this counted as DID
+            # NOT FIRE while its DESIGN-FREEZE.txt sibling, fixed one
+            # commit earlier by the same ruling, was counted NOT RUN.
+            not_run += 1
+            print(
+                f"  CONTROL an amputated enumeration is REFUSED by both arms -> "
+                f"NOT RUN (--since could not read the frozen blob, rc={moves_rc}, "
+                f"so its half of the property was never tested)"
+            )
         else:
             print(
                 f"  CONTROL an amputated enumeration is REFUSED by both arms -> "
@@ -562,7 +584,7 @@ def controls(text: str, tracked: list[pathlib.Path]) -> int:
     return 1 if not_fired else 0
 
 
-def main(argv: list[str]) -> int:
+def _dispatch(argv: list[str]) -> int:
     # ARGV IS READ BY POSITION, NOT BY MEMBERSHIP, and review round 1
     # found why that matters. `repoint-design-citations.py` takes its
     # SHA positionally and shells out to `--since <sha>`, so running
@@ -654,6 +676,42 @@ def main(argv: list[str]) -> int:
             return 3
         return _report_moves(argv[1], design_text, tracked)
     return _report_bounds(len(design_text.splitlines()), tracked)
+
+
+def main(argv: list[str]) -> int:
+    """Run the checker; never let a crash wear a finding's exit code.
+
+    THIS CLOSES A CLASS RATHER THAN THREE DEFECTS. Review rounds 2, 3
+    and 4 each found a dependency that could fail in a way the guard
+    above it did not name, and each fix enumerated the exception types
+    it had just been shown: first `(OSError, CalledProcessError)`, then
+    `GitError`. Round 4 then found three more - a non-UTF8 decode, an
+    unreadable `REPOINT-EXEMPT.txt` whose own error message calls
+    itself a BROKEN INSTRUMENT, and a tracked file gone from disk - all
+    crashing at exit 1, which is this checker's code for "a citation
+    does not resolve".
+
+    A FOURTH LIST OF TYPES WOULD BE THE SAME MISTAKE, LONGER. So this
+    names none: anything that reaches here means the run established
+    NOTHING, and that is what exit 3 says. It cannot be incomplete.
+
+    IT IS A FLOOR, NOT A REPLACEMENT. The specific guards above carry
+    text a reader can act on - which file, which command, which mode -
+    and a generic refusal cannot. Add a named guard for any failure
+    seen in practice; this only ensures that the one nobody predicted
+    still refuses instead of lying. The traceback goes to stderr
+    unabridged, so nothing is lost by catching it.
+    """
+    try:
+        return _dispatch(argv)
+    except Exception as exc:  # noqa: BLE001 - see the docstring above
+        traceback.print_exc()
+        print(
+            f"REFUSED: {type(exc).__name__} reached the top of this checker, "
+            f"so the run established nothing: {exc}"
+        )
+        print("This is a BROKEN INSTRUMENT, not a finding. Exit 3.")
+        return 3
 
 
 if __name__ == "__main__":
