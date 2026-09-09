@@ -91,21 +91,55 @@ _SEARCH_SUFFIXES = {".py", ".toml", ".md", ".yml", ".yaml", ".sh"}
 _SKIP_PARTS = {".git", ".venv", "venv", "__pycache__", ".ruff_cache", ".pytest_cache"}
 
 
-def _stderr_of(exc: BaseException) -> str:
-    """The captured stderr of a failed subprocess, ready to append.
+class GitError(Exception):
+    """git could not be run, or ran and failed. NEVER a finding.
 
+    Carries the captured stderr separately in `detail`, because
     `CalledProcessError.__str__` reports only "returned non-zero exit
-    status N" and drops the output entirely, so a refusal built from
-    the exception alone names the exit code and not the cause. Round 3
-    found the two refusals below doing exactly that while
-    `_report_moves` a few lines away surfaced `git show`'s stderr
-    properly. Returns "" when there is nothing to add, so the caller
-    can concatenate unconditionally.
+    status N" and drops the output, which names the exit code and not
+    the cause.
     """
-    text = getattr(exc, "stderr", None)
-    if isinstance(text, bytes):
-        text = text.decode("utf-8", "replace")
-    return f": {text.strip()}" if isinstance(text, str) and text.strip() else ""
+
+    def __init__(self, message: str, detail: str = "") -> None:
+        """Keep `detail` beside the message, not folded into it."""
+        super().__init__(message)
+        self.detail = detail
+
+
+def _git(*args: str) -> str:
+    """EVERY git call goes through here. Two modes, one exit code.
+
+    Tier 0's ruling, after the template's copy measured the half this
+    file had missed (634ef4b on chore/carried-machinery): converting
+    only the ABSENT case leaves the RAN-AND-FAILED case crashing. A git
+    on PATH that exits 128 - not a repository, or a broken index - gave
+    a CalledProcessError traceback at exit 1, and neither mode yields a
+    file list, so neither is a finding and both must refuse the same
+    way.
+
+    Raising one exception type from one place is what makes the two
+    modes impossible to guard unevenly, which is the defect three
+    review rounds found here in three different disguises: a guard at
+    one call site, then a guard on the wrong subcommand, then a guard
+    on a proxy for the call.
+    """
+    printable = " ".join(("git", *args))
+    try:
+        done = subprocess.run(
+            ["git", *args],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+    except OSError as exc:
+        raise GitError(f"{printable} could not be run at all: {exc}") from exc
+    if done.returncode != 0:
+        detail = done.stderr.strip() or "(git printed nothing on stderr)"
+        raise GitError(
+            f"{printable} ran and exited {done.returncode}: {detail}", detail
+        )
+    return done.stdout
 
 
 def _tracked_files() -> list[pathlib.Path]:
@@ -125,13 +159,7 @@ def _tracked_files() -> list[pathlib.Path]:
     the control passes an empty list instead, which tests the same
     property without a monkeypatch.
     """
-    out = subprocess.run(
-        ["git", "ls-files", "-z"],
-        capture_output=True,
-        text=True,
-        cwd=REPO_ROOT,
-        check=True,
-    ).stdout
+    out = _git("ls-files", "-z")
     files = []
     for name in out.split("\0"):
         if not name:
@@ -281,15 +309,14 @@ def _report_moves(sha: str, new: str, tracked: list[pathlib.Path]) -> int:
     # A MISSING OBJECT IS A BROKEN INSTRUMENT, NOT A FINDING, and the
     # two must not share an exit code. `check-design-freeze.py` already
     # says this for the same cause; here is its sibling learning it.
-    done = subprocess.run(
-        ["git", "show", f"{sha}:docs/DESIGN.md"],
-        capture_output=True,
-        text=True,
-        cwd=REPO_ROOT,
-        check=False,
-    )
-    if done.returncode != 0:
-        detail = done.stderr.strip()
+    #
+    # THROUGH `_git` LIKE EVERY OTHER GIT CALL, and this arm keeps its
+    # own message because the shallow-clone hint below is specific to
+    # `git show` and would be lost in a generic refusal.
+    try:
+        old = _git("show", f"{sha}:docs/DESIGN.md")
+    except GitError as exc:
+        detail = exc.detail or str(exc)
         print(f"git show {sha}:docs/DESIGN.md failed: {detail}")
         # THE PHRASING IS THE WHOLE TRICK, and my first version missed
         # the one git actually emits. A depth-1 clone that HAS the path
@@ -311,7 +338,6 @@ def _report_moves(sha: str, new: str, tracked: list[pathlib.Path]) -> int:
             print("job. It is NOT evidence that any citation moved.")
         print("This is a BROKEN INSTRUMENT, not a finding. Exit 3.")
         return 3
-    old = done.stdout
     # AN EMPTY CORPUS IS A BROKEN INSTRUMENT HERE TOO, AND THIS ARM DID
     # NOT SAY SO. `_report_bounds` has refused one since it was written.
     # This arm computed `citations()` at the loop below, so with
@@ -374,7 +400,7 @@ def controls(text: str, tracked: list[pathlib.Path]) -> int:
     both values makes the claim true and leaves each with a single
     guarded call site.
     """
-    fired = total = 0
+    fired = total = not_run = 0
 
     total += 1
     mapping = line_map(text, "inserted\n" + text)
@@ -486,10 +512,17 @@ def controls(text: str, tracked: list[pathlib.Path]) -> int:
     try:
         frozen = FREEZE.read_text(encoding="utf-8").strip()
     except OSError as exc:
+        # NOT RUN, NOT "DID NOT FIRE". Tier 0's correction of his own
+        # earlier ruling: rc=1 is this checker's code for a control
+        # that RAN and did not fire, and an arm whose precondition is
+        # missing did not run. Reporting it as a failed control said
+        # the opposite of what happened, and the fraction it printed
+        # read as an arm that had answered.
+        not_run += 1
         print(
             "  CONTROL an amputated enumeration is REFUSED by both arms -> "
-            f"DID NOT FIRE (DESIGN-FREEZE.txt is missing, so --since has no "
-            f"sha: {exc})"
+            f"NOT RUN (DESIGN-FREEZE.txt could not be read, so --since has "
+            f"no sha: {exc})"
         )
     else:
         # AN EMPTY LIST *IS* THE AMPUTATED ENUMERATION, passed straight
@@ -513,8 +546,20 @@ def controls(text: str, tracked: list[pathlib.Path]) -> int:
                 f"{said} of 2 refusals printed)"
             )
 
-    print(f"\n{fired}/{total} controls fired.")
-    return 0 if fired == total else 1
+    # THREE OUTCOMES, THREE NUMBERS, and they are not interchangeable.
+    # A control that ran and did not fire is a FINDING about this
+    # checker (rc=1). A control that could not run is a BROKEN
+    # INSTRUMENT (rc=3), the same distinction `_report_moves` and the
+    # two preconditions in `main` already make. Collapsing them into
+    # one fraction was the defect Tier 0 corrected.
+    not_fired = total - fired - not_run
+    print(
+        f"\n{fired} fired, {not_fired} not fired, {not_run} could not run, "
+        f"of {total} controls."
+    )
+    if not_run:
+        return 3
+    return 1 if not_fired else 0
 
 
 def main(argv: list[str]) -> int:
@@ -584,12 +629,18 @@ def main(argv: list[str]) -> int:
     # proves the enumeration ran when the run started. Nothing here
     # re-runs it, so unlike the previous two versions there is no later
     # moment at which the same command can fail differently.
+    #
+    # ONE EXCEPTION TYPE, because `_git` converts both failure modes.
+    # The `(OSError, subprocess.CalledProcessError)` tuple this replaces
+    # was two-thirds of a guard: it named the two shapes it had been
+    # shown and would have missed a third. Catching what the wrapper
+    # raises cannot drift from what the wrapper can do.
     try:
         tracked = _tracked_files()
-    except (OSError, subprocess.CalledProcessError) as exc:
+    except GitError as exc:
         print(
             "REFUSED: the tracked-file enumeration could not run, so "
-            f"nothing can be scanned: {exc}{_stderr_of(exc)}"
+            f"nothing can be scanned: {exc}"
         )
         return 3
 
