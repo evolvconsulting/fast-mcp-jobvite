@@ -182,17 +182,22 @@ Two channels, both required. Your final Agent-tool output does NOT reach whoever
    sender, and errors. Too long for one call? Send numbered parts, never truncate.
 
 **THE EXCEPTION, and it is a population rather than an edge case.** Both rules above are written
-for a NAMED teammate. **Below Tier 1 there are no named teammates** (`PROTOCOL-super-orchestrators.md`
-section 5, K-0099 correcting K-0079, canon on 2026-09-09), so a reviewer dispatched by a
-sub-orchestrator is a NESTED, UNNAMED subagent, and its final Agent-tool output IS returned to
-whoever spawned it rather than vanishing. **That returned output plus the report FILE are your
-deliverable.** `SendMessage` may ALSO reach your parent - it has been measured arriving, tagged by
-agent id rather than by name - so treat it as a second copy and never as the only one.
+for a NAMED teammate. **Below Tier 1 there are no named teammates**
+(`PROTOCOL-super-orchestrators.md` section 5, K-0099 correcting K-0079, canon on 2026-09-09), so a
+reviewer dispatched by a sub-orchestrator is a NESTED, UNNAMED subagent, and its final Agent-tool
+output IS returned to whoever spawned it rather than vanishing. **That returned output plus the
+report FILE are your deliverable.** `SendMessage` may ALSO reach your parent - measured arriving,
+addressed by name in the `to` field and surfacing at the parent tagged by the sender's agent id
+(`PROTOCOL-super-orchestrators.md` section 5, J-0138, and K-0105 correcting K-0099) - so treat it
+as a second copy and never as the only one.
 
-**IF YOUR BRIEF DOES NOT SAY WHICH KIND YOU ARE, DELIVER BY BOTH, AND SAY IN THE FILE WHICH YOU
-ASSUMED.** Asking is not available to you, because the channel you would ask on is the one in
-doubt, so this is a default rather than a decision, and recording the assumption is what lets the
-next reader tell a missing message from an unsent one.
+**IF YOUR BRIEF DOES NOT SAY WHICH KIND YOU ARE, DELIVER BY BOTH.** Asking is not available to
+you, because the channel you would ask on is the one in doubt, so this is a default rather than a
+decision. **You can also just look:** the `ToolSearch` at the top of this file already tells you
+which population you are in, because a nested agent gets `No matching deferred tools found` and a
+named teammate gets the task tools. **Record in the file which population you believe you were**,
+even though you acted on both, so the next reader can tell a message that went missing from one
+that was never sent.
 
 > **A WARNING ABOUT THIS PARAGRAPH'S OWN HISTORY, because it is the failure it now guards against.**
 > An earlier version of these lines said flatly that `SendMessage` "cannot reach that parent at
@@ -230,6 +235,9 @@ evolv operations repository. Where you write is therefore decided by what the do
   `consensus/<OWNER>-report-<task>.md` - the same content under the brief's name, not a sibling
   under the worklog's. Worked pair, checked byte for byte:
   `docs/worklogs/JOBVITE-BUMP-403-report.md` and `consensus/JACK-report-jobvite-fastmcp-403.md`.
+  **IF YOUR BRIEF NAMES ONLY ONE OF THE TWO, REPORT THE GAP RATHER THAN INVENTING THE OTHER NAME.**
+  Nothing requires a brief to carry both, so this is a real case and not a hypothetical; a guessed
+  name produces a file nobody looks for, which is the failure the pair exists to prevent.
   **A worklog written by the super-orchestrator working inside the repository has no operations
   copy and this rule does not ask for one**; `docs/worklogs/REPOINT-403-report.md` is that case,
   which is why looking for its twin finds nothing.
