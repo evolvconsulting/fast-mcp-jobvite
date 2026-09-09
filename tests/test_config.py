@@ -573,7 +573,7 @@ def test_the_whole_committed_template_loads(clean_env: pytest.MonkeyPatch) -> No
 
 
 # ----------------------------------------------------------------------
-# The variable set is closed. DESIGN.md:1629-1633 makes `.env.example`
+# The variable set is closed. DESIGN.md:1639-1643 makes `.env.example`
 # the single enumeration; these DIFF the sets rather than counting them,
 # which is the check that would have caught a three-variable gap in
 # draft 2.
@@ -603,7 +603,7 @@ def _server_json_names() -> set[str]:
 
 
 def test_env_example_and_design_declare_the_same_variables() -> None:
-    """DESIGN.md:1627-1633's check, as a DIFF and never as a count."""
+    """DESIGN.md:1637-1643's check, as a DIFF and never as a count."""
     assert _env_example_names() == _design_names()
 
 

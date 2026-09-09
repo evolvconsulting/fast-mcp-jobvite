@@ -9,7 +9,7 @@
 # written over its output. A green from tests/ is worth exactly what their failure
 # modes are worth, so each one is broken here on purpose and required to go red.
 #
-# The rule the design gates already follow (DESIGN.md:1564-1569, and the reason
+# The rule the design gates already follow (DESIGN.md:1574-1579, and the reason
 # check-coupling-controls.py exists): a checker that has only ever passed is the
 # same failure as the sentence it replaced.
 #
@@ -227,9 +227,9 @@ run_control "loosen the mcp pin to >=" \
   "sed -i 's/\"mcp==2.1.1\"/\"mcp>=2.1.1\"/' pyproject.toml" \
   "test_mcp_is_pinned_with_a_double_equals"
 
-run_control "delete the fastmcp-slim justification comment" \
-  "sed -i 's|# transitive prerelease; must be named or resolution fails||' pyproject.toml" \
-  "test_the_fastmcp_slim_justification_comment_survives"
+run_control "delete the absent-slim-pin justification comment" \
+  "sed -i 's|# a GA pin resolves it unnamed; measured, not assumed||' pyproject.toml" \
+  "test_the_absent_slim_pin_justification_comment_survives"
 
 run_control "point FIXTURES_DIR at a path that does not exist" \
   "sed -i 's|\"docs\" / \"research\" / \"fixtures\"|\"docs\" / \"research\" / \"fixtures-typo\"|' tests/conftest.py" \

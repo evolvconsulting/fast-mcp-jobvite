@@ -886,7 +886,7 @@ jobs:
       #     it exists to make authoritative.
       #
       # STATED CEILING, so this gate is not over-trusted. This project cites almost
-      # entirely as BARE TEXT - `DESIGN.md:1534`, `quality-gates.md:76-81` - not as
+      # entirely as BARE TEXT - `DESIGN.md:1544`, `quality-gates.md:76-81` - not as
       #     (those two are ILLUSTRATIONS OF THE FORM, not pointers to content.
       #     They are the only citations in this file that keep a line number,
       #     and they must: converting them to subject phrases would delete the
@@ -1074,9 +1074,12 @@ jobs:
           # that has to be defended. 413 measured at the merge of fix/m5-exception-detail.
           printf '%s\n' "$out" | bash scripts/check-suite-floor.sh 888
 
-      # The negative arm of §8 #11 - removing the fastmcp-slim pin must fail to
-      # resolve - performs a real resolve, so it is deselected from the offline
-      # default suite and run here with its positive control.
+      # The negative arm of §8 #11 - a PRERELEASE pin whose transitive is not
+      # named must fail to resolve under `prerelease = "explicit"` - performs a
+      # real resolve, so it is deselected from the offline default suite and run
+      # here with its positive control. It read "removing the fastmcp-slim pin"
+      # until ADR-0036, which dropped that pin: at the GA 4.0.3 that mutation
+      # RESOLVES, so the old arm would have gone green by testing nothing.
       # Floored for the same reason as the default suite, and it needs it MORE:
       # this arm is a matched pair, and the pair is the point. If the negative arm
       # alone stopped being collected, the positive one would pass by itself and

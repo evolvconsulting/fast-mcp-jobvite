@@ -16,6 +16,12 @@ build/
 .coverage
 .coverage.*
 coverage.xml
+# `inspect.json` is what the Gate's capability-drift step writes from
+# `fastmcp inspect` on every run. It sat untracked and UNIGNORED after the
+# first run that produced one (found by the 2026-09-08 fastmcp bump), and
+# the committed-file-type gate cannot see an untracked file, so this line
+# is the only layer.
+inspect.json
 # `coverage.json` is what `docs/reviews/check-coverage-floors.py` reads, so the
 # gate produces one on every run. It was NOT listed here, and `coverage.xml`
 # next to it is the reason: an artefact list beside a tool is blind to the

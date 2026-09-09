@@ -89,7 +89,7 @@ ADOPTED_MIDDLEWARE = frozenset(
 #: reading.** `server.py:477-482` appends `DereferenceRefsMiddleware()`
 #: whenever `dereference_schemas` is true, and it defaults to true, so
 #: the live stack is FOUR framework middleware and ours. §7.7 and the C2
-#: threat-model heading (`DESIGN.md:1812`) each enumerated three when
+#: threat-model heading (`DESIGN.md:1822`) each enumerated three when
 #: this constant was written; ADR-0032 adopted the fourth and both now
 #: name it, so this constant and the design agree.
 #:
@@ -289,7 +289,7 @@ def test_the_three_adopted_middleware_are_present() -> None:
 
 
 def test_structured_logging_is_constructed_with_include_payloads_false() -> None:
-    """C2-I1 (DESIGN.md:1820): flipped to `True` this sends raw PII.
+    """C2-I1 (DESIGN.md:1830): flipped to `True` this sends raw PII.
 
     The second half of the positive control, and the half an earlier
     draft omitted: it verified `RateLimitingMiddleware` alone, leaving
@@ -620,7 +620,7 @@ def test_http_without_tokens_raises_rather_than_building_an_open_server() -> Non
 
 
 def test_the_host_and_port_are_honoured() -> None:
-    """The two variables the design NAMED (DESIGN.md:1646)."""
+    """The two variables the design NAMED (DESIGN.md:1656)."""
     kwargs = http_run_kwargs(http_settings(mcp_host="10.1.2.3", mcp_port=9101))
     assert kwargs["host"] == "10.1.2.3"
     assert kwargs["port"] == 9101
@@ -754,7 +754,7 @@ async def test_a_valid_inbound_request_id_reaches_the_tool_unchanged() -> None:
     ],
 )
 async def test_a_malformed_inbound_request_id_is_replaced(malformed: str) -> None:
-    """C7-T1 (DESIGN.md:1885). REPLACED, not refused.
+    """C7-T1 (DESIGN.md:1895). REPLACED, not refused.
 
     A malformed correlation header is not a reason to fail a tool
     call. What it must never do is reach the audit stream: a value

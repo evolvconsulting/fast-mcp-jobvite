@@ -227,7 +227,7 @@ UNWIRED_BY_DECISION: dict[str, str] = {
         "whatever that file records and fails only when the unread set "
         "changes unrecorded. **The size is deliberately not retyped "
         "here**: it read 58 while the file held 43, a count decaying in "
-        "prose exactly as DESIGN.md:1563-1566 says it will. It is "
+        "prose exactly as DESIGN.md:1573-1576 says it will. It is "
         "unwired for a different reason now - it "
         "belongs on PULL REQUESTS against origin/main (a merge cannot "
         "record its own sha), and ci.yml is owned by another agent this "

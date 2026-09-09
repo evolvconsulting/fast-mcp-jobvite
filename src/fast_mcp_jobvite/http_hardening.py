@@ -307,7 +307,7 @@ class RequestIdMiddleware(Middleware):
     **The transport half of `resolve_request_id`.** `audit.py` owns the
     validation - an inbound `X-Request-ID` is echoed only if it is a
     valid UUIDv4, and anything else is discarded and replaced (C7-T1,
-    DESIGN.md:1885). Nothing reached that function from a header
+    DESIGN.md:1895). Nothing reached that function from a header
     before this class: `get_http_headers` is the only place the header
     exists, and it is an HTTP-transport dependency.
 
@@ -359,7 +359,7 @@ def build_middleware(settings: Settings) -> list[Middleware]:
     return [
         RequestIdMiddleware(),
         TimingMiddleware(),
-        # `include_payloads=False` is C2-I1's value (DESIGN.md:1820)
+        # `include_payloads=False` is C2-I1's value (DESIGN.md:1830)
         # and is passed EXPLICITLY. The framework's default is also
         # `False` today, so this keyword changes no behaviour right
         # now - it is here so that a framework default flipping, or

@@ -284,7 +284,7 @@ def test_a_container_under_an_unlisted_key_is_redacted_WHOLE() -> None:
     leaf that happened to carry an allow-listed name - so `job_id`
     escaped from inside a blob called `secretBlob`.
 
-    DESIGN.md:1876 describes C6-I2's mechanism as a **path-keyed**
+    DESIGN.md:1886 describes C6-I2's mechanism as a **path-keyed**
     allow-list for this reason: membership is a property of the path,
     not of the leaf name in isolation.
     """

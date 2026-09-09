@@ -1,5 +1,5 @@
-# Commit-time gates. DESIGN.md:1714-1724, and the stated mitigation for threat
-# row C8-I1 (DESIGN.md:1899), which is rated CRITICAL.
+# Commit-time gates. DESIGN.md:1724-1734, and the stated mitigation for threat
+# row C8-I1 (DESIGN.md:1909), which is rated CRITICAL.
 #
 # WHY BOTH, and why neither is redundant with CI:
 #   - Secret scanning runs HERE and not only in CI because on a public remote a
@@ -10,7 +10,7 @@
 #     secret scanner cleanly. The two gates see different things and neither
 #     substitutes for the other.
 #
-# STATED CEILING, so this is not over-trusted (DESIGN.md:1722-1724): the
+# STATED CEILING, so this is not over-trusted (DESIGN.md:1732-1734): the
 # file-type gate stops a FILE of the wrong type. It does nothing about
 # confidential prose pasted into Markdown, which is the incident we actually
 # had. Review and JOBVITE-API.md section 0.2 cover that, not this file.
@@ -56,7 +56,7 @@ repos:
   #
   # THE BASELINE IS NOT A CONVENIENCE, and it is here against my first
   # instinct. Run without one, this scan is RED on its first run against the
-  # current clean tree: docs/research/FASTMCP.md:354 and :584 are vendor-
+  # current clean tree: docs/research/FASTMCP.md:367 and :597 are vendor-
   # documentation placeholders (`"your-client-secret"` and `"secret-key"`).
   # That is D3's failure shape from U0-REPORT - a gate red on a clean tree
   # trains everyone to ignore it - reappearing on the secret gate.
@@ -68,7 +68,7 @@ repos:
   #     not this unit's file to satisfy a tool;
   #   - the baseline records file, line and a HASH of each accepted
   #     string, so it shows up in the diff, and a NEW finding re-fires.
-  # That is the same shape DESIGN.md:1720-1721 requires of the file-type
+  # That is the same shape DESIGN.md:1730-1731 requires of the file-type
   # gate's override: an exception a reviewer can see.
   #
   # WHY THIS IS A LOCAL HOOK AND NOT `Yelp/detect-secrets`'s OWN. Its hook

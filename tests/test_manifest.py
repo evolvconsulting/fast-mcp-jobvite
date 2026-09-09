@@ -3,7 +3,7 @@
 Three arms, and the third is the one that earns the case its keep:
 
 1. `mcp` is present in `[project].dependencies` with an `==` pin.
-   DESIGN.md:1485-1488 pins it explicitly rather than relying on
+   DESIGN.md:1485-1490 pins it explicitly rather than relying on
    `fastmcp` to hold it, because the `ResponseLimiting` regression
    arrived through the transitive SDK with zero change to the code that
    broke.
@@ -11,13 +11,14 @@ Three arms, and the third is the one that earns the case its keep:
    CI installs with `uv sync --frozen`. Asserted by hashing the file
    either side, because a command that rewrites the lock and then
    reports agreement has proven nothing.
-3. **The negative arm.** A manifest with the `fastmcp-slim` line removed
-   FAILS to resolve. That comment - "transitive prerelease; must be
-   named or resolution fails" - is the only justification the line
-   carries, and a pin whose only justification is a comment is one
-   refactor from deletion. This arm is what stops a future tidy-up
-   dropping an apparently redundant transitive
-   (IMPLEMENTATION-PLAN.md:266-276).
+3. **The negative arm.** Until ADR-0036 this was "a manifest with the
+   `fastmcp-slim` line removed FAILS to resolve", guarding a pin that
+   is gone: at the GA `fastmcp==4.0.3` that mutation RESOLVES, so the
+   arm could only pass by testing nothing. The MECHANISM it existed
+   for is kept and is what the arm asserts now - a PRERELEASE pin
+   whose transitive is not named still fails under
+   `prerelease = "explicit"`, measured against the real 4.0.0b4 that
+   made the rule (IMPLEMENTATION-PLAN.md:266-276).
 """
 
 from __future__ import annotations
@@ -66,15 +67,15 @@ def test_the_runtime_dependency_set_is_exactly_these_and_nothing_else() -> None:
     without anyone deciding to add it should fail here. Adding one is
     meant to cost a deliberate edit.
 
-    **Widen this set by APPENDING. Never relax it to a subset check**,
-    and never remove or reorder the three pins - they are
-    DESIGN.md:1499-1501, and
-    `test_removing_fastmcp_slim_breaks_the_resolve` below is the control
-    that proves the second of them load-bearing.
+    **Widen this set by APPENDING. Never relax it to a subset check.**
+    DESIGN.md:1507-1508 states two pins; the block held three until
+    ADR-0036 removed the second, `fastmcp-slim`, because at the GA
+    4.0.3 it resolves unnamed and the comment calling it load-bearing
+    had become false. The remaining two are not to be removed or
+    reordered.
     """
     assert set(_dependencies()) == {
-        "fastmcp==4.0.0b4",
-        "fastmcp-slim==4.0.0b4",
+        "fastmcp==4.0.3",
         "mcp==2.1.1",
         # U3's, added under the serialised dependency slot.
         # DESIGN.md:303-304 forbids a custom logging module and names
@@ -110,19 +111,23 @@ def test_the_runtime_dependency_set_is_exactly_these_and_nothing_else() -> None:
 def test_prerelease_is_explicit() -> None:
     """`--prerelease=allow` is global in uv; `explicit` confines it.
 
-    DESIGN.md:1518-1520.
+    DESIGN.md:1525-1530.
     """
     with PYPROJECT.open("rb") as fh:
         assert tomllib.load(fh)["tool"]["uv"]["prerelease"] == "explicit"
 
 
-def test_the_fastmcp_slim_justification_comment_survives() -> None:
+def test_the_absent_slim_pin_justification_comment_survives() -> None:
     """The comment IS the specification here.
 
-    Arm 3 below is what makes it true.
+    It records WHY `fastmcp-slim` is no longer named, which is the
+    half a reader cannot recover from the manifest itself: an absent
+    line leaves no trace of the decision that removed it. Renamed with
+    its subject rather than deleted - the guarded claim changed, the
+    property that a claim is guarded did not.
     """
     text = PYPROJECT.read_text()
-    assert "must be named or resolution fails" in text
+    assert "a GA pin resolves it unnamed" in text
 
 
 def test_uv_lock_check_passes_without_amending_the_lockfile() -> None:
@@ -143,8 +148,22 @@ def test_uv_lock_check_passes_without_amending_the_lockfile() -> None:
 
 
 @pytest.mark.network
-def test_removing_fastmcp_slim_breaks_the_resolve(tmp_path: pathlib.Path) -> None:
-    """The control proving the fastmcp-slim pin is load-bearing.
+def test_a_prerelease_pin_without_its_transitive_still_fails(
+    tmp_path: pathlib.Path,
+) -> None:
+    """The mechanism DESIGN.md:1525-1530 pins, asserted as BEHAVIOUR.
+
+    `prerelease = "explicit"` confines uv's global `--prerelease=allow`,
+    and the cost is that a prerelease arriving TRANSITIVELY must be
+    named or the resolve fails. `test_prerelease_is_explicit` above
+    reads that setting out of the manifest; it cannot tell a live
+    setting from an inert one. This arm runs it.
+
+    The fixture is the real 4.0.0b4 that made the rule, so the arm
+    keeps firing after ADR-0036 dropped the `fastmcp-slim` line it used
+    to be written against. That mutation now RESOLVES at 4.0.3, which
+    is why the old arm could not simply be left in place: it would have
+    gone green by testing nothing.
 
     Marked `network` and deselected from the default offline suite: it
     performs a real resolve. CI runs it as its own step. It is excluded
@@ -152,10 +171,11 @@ def test_removing_fastmcp_slim_breaks_the_resolve(tmp_path: pathlib.Path) -> Non
     nothing (DESIGN.md:1310-1312).
     """
     manifest = PYPROJECT.read_text()
-    mutated = "\n".join(
-        line for line in manifest.splitlines() if "fastmcp-slim" not in line
-    )
+    mutated = manifest.replace('"fastmcp==4.0.3"', '"fastmcp==4.0.0b4"')
     assert mutated != manifest, "mutation was a no-op; this control would be vacuous"
+    assert 'prerelease = "explicit"' in mutated, (
+        "the fixture lost the setting under test; the arm would prove nothing"
+    )
 
     (tmp_path / "src" / "fast_mcp_jobvite").mkdir(parents=True)
     (tmp_path / "src" / "fast_mcp_jobvite" / "__init__.py").touch()
@@ -164,9 +184,9 @@ def test_removing_fastmcp_slim_breaks_the_resolve(tmp_path: pathlib.Path) -> Non
     proc = subprocess.run(["uv", "lock"], cwd=tmp_path, capture_output=True, text=True)
     combined = proc.stdout + proc.stderr
     assert proc.returncode != 0, (
-        "removing the fastmcp-slim pin STILL resolved. Either uv's behaviour changed "
-        "or the pin is no longer load-bearing; DESIGN.md:1499-1501 needs an ADR "
-        f"before the line is touched. Output:\n{combined}"
+        "a prerelease pin resolved with its transitive unnamed. Either uv's "
+        'behaviour changed or prerelease = "explicit" is no longer in force; '
+        f"DESIGN.md:1525-1530 needs an ADR before it is touched. Output:\n{combined}"
     )
     assert "fastmcp-slim" in combined, (
         f"failed, but not for the stated reason:\n{combined}"

@@ -1,7 +1,7 @@
 """`get_job_feed` end to end, and the one arm that carries a High.
 
 **C5-I1 is the reason this unit is late rather than part of U5**
-(`DESIGN.md:1864`). `GET /v1/jobFeed` structurally requires `api`, `sc`
+(`DESIGN.md:1874`). `GET /v1/jobFeed` structurally requires `api`, `sc`
 and `companyId` as **query parameters** (DESIGN.md:312-318), so it is
 the one route in this server whose URL is itself a credential.
 

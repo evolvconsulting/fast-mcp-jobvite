@@ -1,6 +1,6 @@
 # FastMCP — Current Developer Reference
 
-**Target: `fastmcp==4.0.0b4` on Python 3.12.** Last revised 2026-08-27.
+**Target: `fastmcp==4.0.3` on Python 3.12.** Last revised 2026-09-08.
 
 Research method: PyPI JSON API, the official docs site `gofastmcp.com`, `modelcontextprotocol.io`,
 and direct inspection of installed source trees. Claims read out of a source tree rather than the
@@ -15,6 +15,12 @@ belongs to THAT document, never to this one - both files number their sections f
 > 4.0.0b4 and the sessionless 2026-07-28 spec. The prose below has been rewritten to the new
 > target rather than annotated, so nothing here describes 3.4.7 as our version. Sections that
 > were never re-verified on 4.0 are marked as such inline.
+>
+> **2026-09-08, ADR-0036.** The 4.0 line went GA on 2026-08-31 and the pin moved to `4.0.3`
+> (PyPI upload 2026-09-05). The Bottom-line row, the release table and the version facts below
+> are rewritten to the GA line. **Every `[FROM SOURCE]` listing in this document was
+> enumerated on 4.0.0b4 and has NOT been re-enumerated on 4.0.3** - each still says the
+> version it was read at, which is the honest record. Read them as indicative for 4.0.3.
 
 ---
 
@@ -22,7 +28,7 @@ belongs to THAT document, never to this one - both files number their sections f
 
 | Decision | Recommendation |
 |---|---|
-| **Version to pin** | `fastmcp==4.0.0b4` **and** `fastmcp-slim==4.0.0b4` as direct dependencies, with `[tool.uv] prerelease = "explicit"`. Naming `fastmcp-slim` is not optional — without it the resolver either fails or drags in a *beta pydantic*. **[FASTMCP-SPIKE-4.md §1.3]** Pin `mcp` too: the one 4.0 defect we found was caused by a dependency major-bump underneath unchanged code. |
+| **Version to pin** | `fastmcp==4.0.3` as a direct dependency. `fastmcp-slim` is **no longer named**: it had to be, while the pin was the `4.0.0b4` prerelease, because `[tool.uv] prerelease = "explicit"` refuses a transitive prerelease nobody named (**[FASTMCP-SPIKE-4.md §1.3]**, still true of a prerelease pin). A GA pin resolves it unnamed - measured both directions on 2026-09-08. Keep `prerelease = "explicit"`; it is what stops a future prerelease arriving unannounced. Pin `mcp` too: the one 4.0 defect we found was caused by a dependency major-bump underneath unchanged code. |
 | **Python floor** | **3.12** (per the standards). Verified working on 3.11.15 and 3.12.3; behaviour identical. **[FASTMCP-SPIKE-4.md §10.1]** |
 | **MCP spec revision we get** | **`2026-07-28`** (sessionless) by default, and `2025-11-25` for handshake-era clients — both served simultaneously from one server on one port. Proven, not quoted. **[FASTMCP-SPIKE-4.md §3.3]** |
 | **Transport** | **stdio by default**, Streamable HTTP opt-in via config. `mcp.run(transport="http", host=..., port=..., path="/mcp")`; `/mcp` is also the default path. `sse` is deprecated. A public repo gets both local and hosted users, so hardcoding HTTP locks out every local client. **[FASTMCP-SPIKE-4.md §7]** |
@@ -31,12 +37,12 @@ belongs to THAT document, never to this one - both files number their sections f
 | **Required config** | pydantic-settings with non-defaulted fields. `fastmcp.json` **cannot** express a required env var and fails *silently*. **[FASTMCP-SPIKE-4.md §10]** |
 | **Mandatory workaround** | An **explicit** SIGTERM handler that raises `KeyboardInterrupt`, plus `os._exit(0)` after `run()` returns — or lifespan teardown never runs on container stop, and on stdio the process survives SIGTERM entirely. Do **not** use `signal.getsignal(SIGINT)`: it can install *ignore SIGTERM*. **[FASTMCP-SPIKE-4.md §19.5]** |
 
-### The httpx → httpx2 decision (open)
+### The httpx → httpx2 decision (settled by ADR-0007)
 
 4.0 replaces `httpx` with **`httpx2`**, which reaches the public API (`Client.__init__` is typed
 `auth: httpx2.Auth`). `httpx` is not installed at all. The two **do** coexist as separate modules,
 so our Jobvite client may use either — but `except httpx.HTTPError` will never catch a
-FastMCP-raised exception. Keep every `except httpx.*` in one module. **[FASTMCP-SPIKE-4.md §1.2]**
+FastMCP-raised exception; ADR-0007 chose `httpx2` and dropped the one-module confinement rule as unnecessary (design rule 3 below). **[FASTMCP-SPIKE-4.md §1.2]**
 
 ### Top 5 things `fast-mcp-jira` does that we must not copy
 
@@ -64,9 +70,13 @@ Source: `https://pypi.org/pypi/fastmcp/json`.
 | 3.4.0 | 2026-06-03 |
 | **3.4.7 (latest stable)** | **2026-08-10T21:17:51Z** |
 | 4.0.0b1 | 2026-07-28 |
-| 4.0.0b4 (latest prerelease) | 2026-08-26T22:59:04Z |
+| 4.0.0b4 (last prerelease we pinned) | 2026-08-26T22:59:04Z |
+| 4.0.0 (GA) | 2026-08-31T18:20:31Z |
+| 4.0.1 | 2026-09-02T00:20:45Z |
+| 4.0.2 | 2026-09-02T23:28:03Z |
+| **4.0.3 (latest, and our pin)** | **2026-09-05T00:31:33Z** |
 
-- `fastmcp` is a thin metapackage whose only base dependency is the matching `fastmcp-slim`. **This is why our pin must name both** — see the Bottom line. Extras: `anthropic`, `apps`, `azure`, `code-mode`, `gemini`, `openai`, `tasks`.
+- `fastmcp` is a thin metapackage whose only base dependency is the matching `fastmcp-slim`. **This is why the pin had to name both while it was a prerelease** — see the Bottom line. At a GA pin the metapackage pulls it unnamed. Extras: `anthropic`, `apps`, `azure`, `code-mode`, `gemini`, `openai`, `tasks`.
 - `fastmcp-slim` 4.0.0b4 depends on `mcp>=2.0.0,<3.0.0` and `httpx2>=2.5.0` — a **major** SDK jump vs the 3.x line.
 
 ### MCP protocol revision
@@ -78,7 +88,7 @@ Source: `https://pypi.org/pypi/fastmcp/json`.
 
 ### Version and spec facts
 
-- `fastmcp` 4.0.0b4 released **2026-08-26**; 3.4.7 (last stable) 2026-08-10. `requires_python >=3.10`.
+- `fastmcp` 4.0.3 released **2026-09-05**; 4.0.0 went GA 2026-08-31; 4.0.0b4, the prerelease this document was written against, 2026-08-26. `requires_python >=3.10`.
 - 4.0 resolves to `mcp` **2.1.1**, `mcp-types` 2.1.1, `starlette` 1.6.0, `httpx2` 2.12.0, and requires `pydantic>=2.12`. **[FASTMCP-SPIKE-4.md §1.1]**
 - The current published MCP spec revision is **`2026-07-28`**, per `https://modelcontextprotocol.io/specification/versioning`. 4.0 serves it **and** the older handshake revisions from the same server. **[FASTMCP-SPIKE-4.md §3]**
 - `server/discover` reports `supportedVersions: ["2026-07-28"]` **only**, despite demonstrably serving 2025-11-25 clients — do not treat that list as exhaustive. **[FASTMCP-SPIKE-4.md §3.1]**
@@ -665,22 +675,22 @@ Removals / renames:
 - Tasks moved to an extension: `mcp.add_extension(TasksExtension())` from `fastmcp_tasks`; `task=` only valid on tools.
 - Middleware hooks now observe **every** inbound message, including notifications and unroutable requests.
 
-Prerelease install:
+Install (4.0 has been GA since 2026-08-31; the prerelease recipe that sat here, `fastmcp==4.0.0b3` with a `constraint-dependencies` line naming `fastmcp-slim`, is no longer needed, and `fastmcp-slim` is no longer named at all, see the **Version to pin** row above):
 
 ```bash
-pip install "fastmcp==4.0.0b3"
+pip install "fastmcp==4.0.3"
 ```
 
 ```toml
 [tool.uv]
-constraint-dependencies = ["fastmcp-slim==4.0.0b3"]
+prerelease = "explicit"   # inert at a GA pin; refuses a future prerelease nobody named
 ```
 
 ### Design rules for `fast-mcp-jobvite` on 4.0
 
 1. Never use `exclude_args=`, `serializer=`, `sampling_handler=`, `ctx.sample*`, `ctx.list_roots()` — all removed in 4.0, confirmed by signature.
 2. If we call `ctx.elicit()`, always pass `response_type`.
-3. Keep our HTTP client wrapper's `except httpx.*` clauses in **one module** so the `httpx2` swap is a single-file change.
+3. The HTTP client is `httpx2`, the one FastMCP ships (ADR-0007). The one-module confinement rule that used to sit here, and its AST test, were **dropped by ADR-0007 as unnecessary**: adopting `httpx2` removed the hazard the rule guarded (an `except httpx.HTTPError` that could never catch a FastMCP-raised exception) rather than guarding it. As a description, not a rule: today the `httpx2` exception handling sits in `services/jobvite_client.py` (the `except (httpx2.HTTPError, ...)` clause and the `isinstance` classification into `JobviteUnavailableError`), and `utils/redaction.py` touches `httpx2` only for its logger.
 4. Use `mcp.mount(namespace=...)` semantics from day one if we ever compose servers.
 5. Pin `mcp` alongside `fastmcp`. The one 4.0 defect we found (§8, `ResponseLimitingMiddleware`) was a **regression caused by the `mcp` 1.x → 2.x bump underneath unchanged middleware code** — the characteristic hazard of early adoption.
 

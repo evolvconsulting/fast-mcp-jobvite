@@ -1,0 +1,6 @@
+# Every `repoint-design-citations.py <sha> --write` appends one row:
+# <base sha> TAB <docs/DESIGN.md blob at that base> TAB <citations moved> TAB <date>.
+# The tool refuses a base whose DESIGN.md blob already appears here, because
+# its report would move every LIVE citation a second time (round 3, F8).
+# The first row was written by hand for the batch that predates this file.
+a9a85ed	61e264d39b88784b57b73cc135a5167a9a7641e0	69	2026-09-08

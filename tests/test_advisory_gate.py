@@ -1,4 +1,4 @@
-"""The advisory-expiry gate. DESIGN.md:1586-1605, §8 case #15.
+"""The advisory-expiry gate. DESIGN.md:1596-1615, §8 case #15.
 
 HOW THE CLOCK IS PINNED, stated because a self-referential date test is
 the exact shape of a green that tested nothing. Every date in this file
@@ -217,7 +217,7 @@ def test_an_entry_with_no_date_is_rejected() -> None:
 
 
 def test_an_entry_with_no_reason_is_rejected() -> None:
-    """DESIGN.md:1594-1597 requires a written unreachability reason."""
+    """DESIGN.md:1604-1607 requires a written unreachability reason."""
     flags, refusals = gate.check_entries([entry(reason=None)], NOW)
     assert flags == []
     assert "no written reason" in refusals[0]
@@ -276,7 +276,7 @@ def test_the_30_day_budget_is_measured_from_the_recorded_date_not_from_now() -> 
 
 
 def test_a_blanket_ignore_with_no_advisory_id_is_rejected() -> None:
-    """DESIGN.md:1604-1605. Never a blanket ignore."""
+    """DESIGN.md:1614-1615. Never a blanket ignore."""
     flags, refusals = gate.check_entries([entry(id=None)], NOW)
     assert flags == []
     assert len(refusals) == 1

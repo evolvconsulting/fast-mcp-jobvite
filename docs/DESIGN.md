@@ -1482,22 +1482,29 @@ Jobvite's, not ours, each needing explicit handling:
 Canonical at `evolvconsulting/fast-mcp-jobvite`, mirrored to `Aztec03hub/fast-mcp-jobvite`.
 Apache-2.0, `Copyright 2026 evolv Consulting`, with a NOTICE.
 
-Python `>=3.12`. `fastmcp==4.0.0b4` targeting the sessionless `2026-07-28` spec as deliberate
-early adopters. **`mcp` is pinned explicitly**, not just `fastmcp`: the `ResponseLimiting`
+Python `>=3.12`. `fastmcp==4.0.3`, the GA line, targeting the sessionless `2026-07-28` spec as
+deliberate early adopters: the pin was the beta `4.0.0b4` until ADR-0036 (2026-09-08) moved it to
+`4.0.3`, five days after `4.0.0`; the spec target did not move. **`mcp` is pinned explicitly**, not
+just `fastmcp`: the `ResponseLimiting`
 regression arrived through the transitive SDK with zero change to the code that broke, which is
 the characteristic failure mode of early adoption on a freshly major-bumped dependency.
 
-Packaging, verbatim, because every line is load-bearing. **The spike verified a two-pin recipe; this
-block adds `mcp`, so the three-pin form was resolved on its own before being written here** - `uv
-lock` against exactly this block exits 0, resolves 72 packages, and holds `pydantic` at a **stable**
-2.13.4 (`fastmcp` 4.0.0b4, `fastmcp-slim` 4.0.0b4, `mcp` 2.1.1, `mcp-types` 2.1.1, `httpx2` 2.12.0,
-`starlette` 1.6.0, and no `httpx`). Adding a hard `==` pin inside a `prerelease = "explicit"` resolve
-is the change most likely to fail to resolve, which is why it was run rather than assumed:
+Packaging, the pin core verbatim, because every line is load-bearing. The block was written as
+three pins: the spike verified a two-pin recipe (`fastmcp` and `fastmcp-slim`, the beta and its
+transitive prerelease, which `prerelease = "explicit"` refuses unless named), this block added
+`mcp`, and the three-pin form was resolved on its own before being written here (`uv lock` exit 0,
+72 packages, `pydantic` at a **stable** 2.13.4). **ADR-0036 removed the `fastmcp-slim` line when
+the pin moved to the GA `4.0.3`**: a GA pin resolves its transitive unnamed, measured in five `uv
+lock` arms with a positive and a negative control (the negative, the beta without its transitive,
+still fails to resolve), and the lock moved exactly two packages, `fastmcp` and `fastmcp-slim`,
+holding 121 packages either side with `mcp` 2.1.1, `mcp-types` 2.1.1, `httpx2` 2.12.0,
+`starlette` 1.6.0, `pydantic` 2.13.5 and no `httpx`. Adding a hard `==` pin inside a
+`prerelease = "explicit"` resolve is the change most likely to fail to resolve, which is why every
+form of this block was run rather than assumed:
 
 ```toml
 dependencies = [
-  "fastmcp==4.0.0b4",
-  "fastmcp-slim==4.0.0b4",   # transitive prerelease; must be named or resolution fails
+  "fastmcp==4.0.3",
   "mcp==2.1.1",              # the transitive SDK that broke a middleware with no code change
 ]
 
@@ -1515,9 +1522,12 @@ disease and does not prescribe the remedy. `uv.lock` is committed, CI runs `uv s
 the SBOM is generated from that frozen resolve. An SBOM produced from an unfrozen resolve documents
 a build nobody shipped.
 
-`--prerelease=allow` is global in uv and pulls in a beta pydantic; `explicit` alone fails to
-resolve because `fastmcp-slim` arrives transitively. Naming it directly resolves pydantic to
-stable.
+`prerelease = "explicit"` is kept at the GA pin (ADR-0036), and the reason changed with the pin.
+Under the beta it was load-bearing in the other direction: `--prerelease=allow` is global in uv
+and pulled in a beta pydantic, and `explicit` alone failed to resolve because `fastmcp-slim`
+arrived transitively as a prerelease, so naming it directly was what resolved pydantic to stable.
+At `4.0.3` nothing in the tree is a prerelease, the setting is inert, and it stays as the guard
+that refuses a future transitive prerelease nobody named instead of accepting one silently.
 
 **HTTP client is `httpx2`, the same one FastMCP ships: ADR-0007.** One HTTP stack in the image,
 not two.

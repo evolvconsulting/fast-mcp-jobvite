@@ -34,7 +34,7 @@ every line of it:
 **What the guard establishes, exactly:** the server requires an approval
 response from the host and refuses to write without one. **Never that a
 human approved.** C4-S1 is a High residual, not mitigable server-side
-(DESIGN.md:1842, ADR-0009).
+(DESIGN.md:1852, ADR-0009).
 
 **This is the candidate PII data class** (DESIGN.md:137), which is the
 step up from `tools/jobs.py`. It is the first tool surface where §6.1's
@@ -222,7 +222,7 @@ class CreateCandidateInput(InboundModel):
     """Arguments for `create_candidate`.
 
     **THIS MODEL CARRIES CANDIDATE PII BY CONSTRUCTION** - name, email
-    and phone are what it is for (DESIGN.md:1776). Every string is
+    and phone are what it is for (DESIGN.md:1786). Every string is
     `SafeText`, which bounds the length and rejects control characters
     and bidi overrides before dispatch (§2.1, B25).
 

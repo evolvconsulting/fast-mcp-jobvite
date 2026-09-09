@@ -41,6 +41,13 @@ import repoint_exempt
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 CHECKER = REPO_ROOT / "docs" / "reviews" / "check-design-citations.py"
+#: Every `--write` appends a row here: the base it moved FROM, the
+#: DESIGN.md blob at that base, how many citations moved, the date. A
+#: later run whose base carries the SAME blob would report the same
+#: moves again and move every LIVE citation a second time, to a wrong
+#: target: review round 3 of the 4.0.3 branch measured 73 such
+#: re-reports after the first batch. That base is refused.
+LOG = REPO_ROOT / "docs" / "reviews" / "REPOINT-LOG.txt"
 
 #: {(old start, old end): (new start, new end)} for ONE cited line
 Pairs = dict[tuple[int, int], tuple[int, int]]
@@ -57,6 +64,10 @@ _MOVED = re.compile(
 
 class CheckerFailed(RuntimeError):  # noqa: N818 - a refusal, not an error
     """The checker did not run cleanly, so its report is not proof."""
+
+
+class LogError(RuntimeError):
+    """REPOINT-LOG.txt is malformed; nothing moves until it is fixed."""
 
 
 def report(sha: str) -> str:
@@ -117,20 +128,56 @@ def report(sha: str) -> str:
 #: leads there rather than a verdict, and a ruling made from a directory
 #: name is exactly the reasoning this project keeps finding wrong. The
 #: refusal is what makes leaving them undecided SAFE.
-LIVE_PREFIXES = ("src/", "tests/", "scripts/", ".github/")
-RECORD_PREFIXES = ("docs/adr/", "docs/plans/")
+#:
+#: RULED 2026-09-08 (JACK, evolv consensus/JACK.md J-0084), after
+#: f608850 added ten lines to DESIGN.md section 10 and
+#: `--since a9a85ed` reported 232 MOVED, 136 of them here. Read, not
+#: inferred from a name: docs/worklogs and docs/archive hold reports
+#: of work at a time and docs/briefs the briefs that dispatched it,
+#: so all three are RECORD; docs/briefs/PREAMBLE.md is the live
+#: working rule, LIVE, and the longest matching prefix wins so that
+#: file ruling holds under the directory ruling. pyproject.toml and
+#: .pre-commit-config.yaml describe the manifest and the hook config
+#: as they are, LIVE. docs/reviews is mixed on purpose: a .py or .sh
+#: there is an instrument that runs against the current tree (its own
+#: examples carry REPOINT-EXEMPT and are skipped), LIVE; a .md or .txt
+#: there is a review, a ruling, an audit or an evidence file, RECORD.
+LIVE_PREFIXES = (
+    "src/",
+    "tests/",
+    "scripts/",
+    ".github/",
+    "pyproject.toml",
+    ".pre-commit-config.yaml",
+    "docs/briefs/PREAMBLE.md",
+)
+RECORD_PREFIXES = (
+    "docs/adr/",
+    "docs/plans/",
+    "docs/worklogs/",
+    "docs/briefs/",
+    "docs/archive/",
+)
+INSTRUMENT_DIRS = ("docs/reviews/",)
+INSTRUMENT_SUFFIXES = (".py", ".sh")
 
 
 def classify(path: str) -> str:
     """LIVE, RECORD or UNRULED.
 
-    The unknown case is UNRULED on purpose - see the note above.
+    The unknown case is UNRULED on purpose - see the note above. The
+    longest matching prefix wins, so a file ruled under a directory
+    ruled the other way keeps its own ruling.
     """
-    if path.startswith(RECORD_PREFIXES):
-        return "RECORD"
-    if path.startswith(LIVE_PREFIXES):
-        return "LIVE"
-    return "UNRULED"
+    if path.startswith(INSTRUMENT_DIRS):
+        return "LIVE" if path.endswith(INSTRUMENT_SUFFIXES) else "RECORD"
+    live = max((p for p in LIVE_PREFIXES if path.startswith(p)), key=len, default="")
+    record = max(
+        (p for p in RECORD_PREFIXES if path.startswith(p)), key=len, default=""
+    )
+    if not live and not record:
+        return "UNRULED"
+    return "LIVE" if len(live) > len(record) else "RECORD"
 
 
 def parse(
@@ -207,9 +254,11 @@ def parse(
         key = (m["file"], int(m["lineno"]))
         moves.setdefault(key, {})[(old_s, old_e)] = (new_s, new_e)
     if records:
-        print(f"\n{len(records)} citation(s) in docs/adr/ are RECORDS and are")
-        print("NOT repointed - see docs/adr/README.md. This is a deliberate")
-        print("skip, printed so it cannot be mistaken for the tool failing:")
+        print(f"\n{len(records)} citation(s) sit in RECORD paths and are NOT")
+        print("repointed (docs/adr/, docs/plans/, docs/worklogs/, docs/briefs/,")
+        print("docs/archive/, and documents under docs/reviews/; the ruling is")
+        print("above LIVE_PREFIXES). A deliberate skip, printed so it cannot be")
+        print("mistaken for the tool failing:")
         print("\n".join(records))
     return moves, unreadable, unruled
 
@@ -279,11 +328,90 @@ def apply(moves: MoveMap, write: bool) -> int:
     return 0
 
 
+def design_blob(sha: str) -> str:
+    """The blob id of docs/DESIGN.md at `sha`, or "" if git cannot."""
+    done = subprocess.run(
+        ["git", "rev-parse", f"{sha}:docs/DESIGN.md"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    return done.stdout.strip() if done.returncode == 0 else ""
+
+
+def already_moved_from(blob: str) -> str | None:
+    """The log row whose base carries the DESIGN.md blob `blob`.
+
+    A row that does not split into its four TAB-separated fields is a
+    broken instrument, refused by file and line rather than crashed
+    on (review round 4, F13): the file's header invites hand edits.
+    """
+    if not LOG.exists():
+        return None
+    for num, row in enumerate(LOG.read_text(encoding="utf-8").splitlines(), 1):
+        if not row.strip() or row.startswith("#"):
+            continue
+        parts = row.split("\t")
+        if len(parts) != 4:
+            raise LogError(
+                f"{LOG.name}:{num}: {len(parts)} field(s), expected 4 "
+                "(base, DESIGN.md blob, moved, date), TAB separated"
+            )
+        logged = parts[1].strip()
+        if not re.fullmatch(r"[0-9a-f]{40}", logged):
+            # A row that can never match would never refuse anything;
+            # round 5 (F15) planted an empty blob field and it sat
+            # there as dead weight. Refused by file and line instead.
+            raise LogError(
+                f"{LOG.name}:{num}: the blob field is {parts[1]!r}, not a "
+                "40-character blob id, so the row could never match"
+            )
+        if blob == logged:
+            return row
+    return None
+
+
+def record_write(sha: str, blob: str, moved: int) -> None:
+    """Append this --write to the log, so the base cannot be reused."""
+    date = subprocess.run(
+        ["date", "+%Y-%m-%d"], capture_output=True, text=True, check=True
+    ).stdout.strip()
+    with LOG.open("a", encoding="utf-8") as fh:
+        fh.write(f"{sha}\t{blob}\t{moved}\t{date}\n")
+
+
 def main(argv: list[str]) -> int:
     if not argv:
         print(__doc__)
         return 1
     sha = argv[0]
+    blob = design_blob(sha)
+    if not blob:
+        # Without the blob the base can be neither checked against the
+        # log nor recorded in it, and a --write would log an empty
+        # field that could never refuse a second run (round 5, F15).
+        print(
+            f"  REFUSED: git cannot read docs/DESIGN.md at {sha!r}, so this "
+            "base cannot be checked against the log or recorded in it. "
+            "Nothing will be repointed."
+        )
+        return 1
+    try:
+        prior = already_moved_from(blob)
+    except LogError as exc:
+        print(f"  REFUSED: {exc}. Nothing will be repointed.")
+        return 1
+    if prior:
+        print(
+            f"  REFUSED: docs/DESIGN.md at {sha!r} is the blob a previous --write "
+            "already repointed FROM:\n"
+            f"  {prior}\n"
+            "  A second run from that base moves every LIVE citation again, to a "
+            "wrong target. Use --since a base at or after the commit that carried "
+            "that write."
+        )
+        return 1
     try:
         text = report(sha)
     except CheckerFailed as exc:
@@ -322,7 +450,10 @@ def main(argv: list[str]) -> int:
         )
         return 1
     print(f"  parsed {total} MOVED citation(s) from the checker's output")
-    return apply(moves, write="--write" in argv)
+    rc = apply(moves, write="--write" in argv)
+    if rc == 0 and "--write" in argv:
+        record_write(sha, blob, total)
+    return rc
 
 
 if __name__ == "__main__":
