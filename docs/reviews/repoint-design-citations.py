@@ -358,7 +358,16 @@ def already_moved_from(blob: str) -> str | None:
                 f"{LOG.name}:{num}: {len(parts)} field(s), expected 4 "
                 "(base, DESIGN.md blob, moved, date), TAB separated"
             )
-        if blob and blob == parts[1]:
+        logged = parts[1].strip()
+        if not re.fullmatch(r"[0-9a-f]{40}", logged):
+            # A row that can never match would never refuse anything;
+            # round 5 (F15) planted an empty blob field and it sat
+            # there as dead weight. Refused by file and line instead.
+            raise LogError(
+                f"{LOG.name}:{num}: the blob field is {parts[1]!r}, not a "
+                "40-character blob id, so the row could never match"
+            )
+        if blob == logged:
             return row
     return None
 
@@ -378,6 +387,16 @@ def main(argv: list[str]) -> int:
         return 1
     sha = argv[0]
     blob = design_blob(sha)
+    if not blob:
+        # Without the blob the base can be neither checked against the
+        # log nor recorded in it, and a --write would log an empty
+        # field that could never refuse a second run (round 5, F15).
+        print(
+            f"  REFUSED: git cannot read docs/DESIGN.md at {sha!r}, so this "
+            "base cannot be checked against the log or recorded in it. "
+            "Nothing will be repointed."
+        )
+        return 1
     try:
         prior = already_moved_from(blob)
     except LogError as exc:
