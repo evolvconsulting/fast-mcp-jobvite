@@ -66,7 +66,9 @@ Exit 0 when every citation resolves, 1 otherwise. No dependencies.
 
 from __future__ import annotations
 
+import contextlib
 import difflib
+import io
 import pathlib
 import re
 import subprocess
@@ -76,6 +78,7 @@ import repoint_exempt
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 DESIGN = REPO_ROOT / "docs" / "DESIGN.md"
+FREEZE = REPO_ROOT / "docs" / "DESIGN-FREEZE.txt"
 
 # Examples, REPOINT-EXEMPT: `DESIGN.md:603`, `DESIGN.md:918-924` - these
 # are what the pattern MATCHES, not citations of anything, so they must
@@ -127,6 +130,16 @@ EXEMPT_MARKER = repoint_exempt.MARKER
 #: citation at all, so the number that was supposed to make the
 #: exemption visible was mostly counting prose about the exemption.
 EXEMPT_SKIPPED = 0
+
+#: BOTH scan arms print this and exit non-zero on an empty corpus. An
+#: empty corpus is a BROKEN SELECTOR and never a clean tree. It is a
+#: constant so `--controls` can assert this exact string: a control
+#: that accepted any non-zero would also pass on a shallow checkout's
+#: exit 3, which is a different failure entirely.
+EMPTY_CORPUS = (
+    "SELECTOR CONTROL: no DESIGN.md citations found anywhere. The "
+    "pattern is broken, not the corpus."
+)
 
 
 def citations() -> list[tuple[pathlib.Path, int, int, int]]:
@@ -183,10 +196,7 @@ def line_map(old_text: str, new_text: str) -> dict[int, int | None]:
 def _report_bounds(total_lines: int) -> int:
     found = citations()
     if not found:
-        print(
-            "SELECTOR CONTROL: no DESIGN.md citations found anywhere. The "
-            "pattern is broken, not the corpus."
-        )
+        print(EMPTY_CORPUS)
         return 1
 
     bad = [
@@ -268,6 +278,24 @@ def _report_moves(sha: str) -> int:
         print("This is a BROKEN INSTRUMENT, not a finding. Exit 3.")
         return 3
     old = done.stdout
+    # AN EMPTY CORPUS IS A BROKEN INSTRUMENT HERE TOO, AND THIS ARM DID
+    # NOT SAY SO. `_report_bounds` has refused one since it was written.
+    # This arm computed `citations()` at the loop below, so with
+    # `_tracked_files()` returning nothing it printed "0 citation(s)
+    # moved, 0 point at changed lines" and exited 0 - where the same
+    # run with the enumeration intact reported 1618 moved and 55
+    # pointing at changed lines, and exited 1. Measured 2026-09-09
+    # against 28be78a by patching the enumerator to return an empty
+    # list. Board row 23.
+    #
+    # POSITION IS LOAD-BEARING. Below the `git show`, so a shallow
+    # checkout still gets its own message and its own exit 3; above the
+    # byte-identical short circuit, which answers "no citation can have
+    # moved" without ever asking whether there are any.
+    found = citations()
+    if not found:
+        print(EMPTY_CORPUS)
+        return 1
     new = DESIGN.read_text()
     if old == new:
         print(f"DESIGN.md is byte-identical to {sha}. No citation can have moved.")
@@ -276,7 +304,7 @@ def _report_moves(sha: str) -> int:
     mapping = line_map(old, new)
     moved: list[str] = []
     broken: list[str] = []
-    for path, lineno, start, end in citations():
+    for path, lineno, start, end in found:
         new_start, new_end = mapping.get(start), mapping.get(end)
         rel = path.relative_to(REPO_ROOT)
         cited = f"DESIGN.md:{start}" + (f"-{end}" if end != start else "")
@@ -333,6 +361,56 @@ def controls() -> int:
         print("  CONTROL the pattern reads both forms -> FIRED")
     else:
         print("  CONTROL the pattern reads both forms -> DID NOT FIRE")
+
+    # THE THREE CONTROLS ABOVE NEVER TOUCH THE CORPUS. They exercise
+    # the pattern and the line map against hardcoded strings, so with
+    # `_tracked_files()` returning nothing this arm still printed
+    # "3/3 controls fired." at exit 0 while the real scan had no file
+    # to read. Measured 2026-09-09, both checkers, same amputation: this
+    # arm did not move at all and the sibling
+    # `check-design-citation-shape.py --controls` went 7/7 exit 0 to
+    # 6/7 exit 1. Board row 23. A controls arm blind to its own
+    # population certifies a checker that is scanning nothing.
+    total += 1
+    tracked = _tracked_files()
+    here = pathlib.Path(__file__).resolve()
+    if tracked and here in tracked:
+        fired += 1
+        print(f"  CONTROL the corpus is enumerated ({len(tracked)} files) -> FIRED")
+    else:
+        print(
+            f"  CONTROL the corpus is enumerated -> DID NOT FIRE "
+            f"({len(tracked)} file(s), this checker "
+            f"{'present' if here in tracked else 'MISSING'})"
+        )
+
+    # AND THE NEGATIVE ARM, because a control that can only pass is the
+    # same defect one column over: the arm above would fire on any
+    # non-empty list, including one that had lost every file but this
+    # one. Here the enumeration is amputated and BOTH scan arms must
+    # refuse, by the exact message rather than by a bare non-zero.
+    # `--since` is given the frozen SHA, read and never retyped, so the
+    # arm needs no historical commit of its own.
+    total += 1
+    real = globals()["_tracked_files"]
+    globals()["_tracked_files"] = list  # `list()` IS the empty enumeration
+    buf = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buf):
+            bounds_rc = _report_bounds(len(text.splitlines()))
+            moves_rc = _report_moves(FREEZE.read_text(encoding="utf-8").strip())
+    finally:
+        globals()["_tracked_files"] = real
+    said = buf.getvalue().count(EMPTY_CORPUS)
+    if (bounds_rc, moves_rc, said) == (1, 1, 2):
+        fired += 1
+        print("  CONTROL an amputated enumeration is REFUSED by both arms -> FIRED")
+    else:
+        print(
+            f"  CONTROL an amputated enumeration is REFUSED by both arms -> "
+            f"DID NOT FIRE (bounds rc={bounds_rc}, --since rc={moves_rc}, "
+            f"{said} of 2 refusals printed)"
+        )
 
     print(f"\n{fired}/{total} controls fired.")
     return 0 if fired == total else 1
