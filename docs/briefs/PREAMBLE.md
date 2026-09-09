@@ -69,6 +69,10 @@ already `completed`, say so and stop.**
   /tmp/<agent-name>-work <sha>`. **Do NOT check anything out in the shared checkout** - I am working
   in it, and a tree moving under an agent has cost reviewers whole mutation batches.
 - Run `git worktree list` before moving any ref.
+- **Cut the worktree yourself, with `git worktree add` against the repository the work is in.**
+  Do NOT reach for a harness's `isolation: "worktree"` option: it cuts from the SESSION's outer
+  repository, which is the evolv operations folder and never the product repo you were sent to
+  (`PROTOCOL-super-orchestrators.md` section 5).
 - **`docs/DESIGN.md` is FROZEN.** Read it as
   `git show "$(cat docs/DESIGN-FREEZE.txt)":docs/DESIGN.md` - **derive the SHA, never retype it and
   never accept one typed into a brief.** A brief naming a stale-but-VALID SHA resolves cleanly and
@@ -178,12 +182,26 @@ Two channels, both required. Your final Agent-tool output does NOT reach whoever
    sender, and errors. Too long for one call? Send numbered parts, never truncate.
 
 **THE EXCEPTION, and it is a population rather than an edge case.** Both rules above are written
-for a NAMED teammate. An agent spawned as a NESTED, UNNAMED subagent is in the opposite position on
-both counts: its final Agent-tool output IS returned to whoever spawned it, and `SendMessage`
-cannot reach that parent at all, because a parent is not on a nested agent's roster. A reviewer
-dispatched by a sub-orchestrator is normally exactly this. If that is you, your two channels are
-the report FILE and your final output, and calling `SendMessage` sends your round into the dark.
-**Your brief says which of the two you are; if it does not, ask before you deliver.**
+for a NAMED teammate. **Below Tier 1 there are no named teammates** (`PROTOCOL-super-orchestrators.md`
+section 5, K-0099 correcting K-0079, canon on 2026-09-09), so a reviewer dispatched by a
+sub-orchestrator is a NESTED, UNNAMED subagent, and its final Agent-tool output IS returned to
+whoever spawned it rather than vanishing. **That returned output plus the report FILE are your
+deliverable.** `SendMessage` may ALSO reach your parent - it has been measured arriving, tagged by
+agent id rather than by name - so treat it as a second copy and never as the only one.
+
+**IF YOUR BRIEF DOES NOT SAY WHICH KIND YOU ARE, DELIVER BY BOTH, AND SAY IN THE FILE WHICH YOU
+ASSUMED.** Asking is not available to you, because the channel you would ask on is the one in
+doubt, so this is a default rather than a decision, and recording the assumption is what lets the
+next reader tell a missing message from an unsent one.
+
+> **A WARNING ABOUT THIS PARAGRAPH'S OWN HISTORY, because it is the failure it now guards against.**
+> An earlier version of these lines said flatly that `SendMessage` "cannot reach that parent at
+> all". That was INFERRED from a refusal to SPAWN a named teammate ("Teammates cannot spawn other
+> teammates - the team roster is flat"), which says nothing about message delivery, and it was
+> never tested: its author had written "do NOT call SendMessage" into all six of its reviewer
+> briefs, so no attempt was ever made and no evidence could arrive. A sibling lane then measured
+> the opposite. **A brief that forbids the thing in question destroys the evidence for it**, and a
+> citation added to an untested sentence makes it better-sourced rather than true.
 
 Inbound messages reach you only when you go IDLE - not between two tool calls. If you want to stay
 reachable, break long work into turns.
@@ -206,7 +224,15 @@ evolv operations repository. Where you write is therefore decided by what the do
   settle (section 5, K-0060 condition 2) and this is the settlement: it does not move. The copy is
   not duplication for its own sake - a teammate's `SendMessage` only arrives at its leader's next
   turn boundary, so the FILE is the channel that can be read without one.
-  `docs/worklogs/JOBVITE-BUMP-403-report.md` and `docs/worklogs/REPOINT-403-report.md` are the pair.
+  **THE TWO NAMES ARE NOT DERIVED FROM EACH OTHER, so your brief gives you BOTH paths and this
+  file cannot give you a rule for the second.** Your worklog is `docs/worklogs/<TASK>-report.md`
+  here; what the operations repository holds is THE REPORT YOUR BRIEF NAMES, normally
+  `consensus/<OWNER>-report-<task>.md` - the same content under the brief's name, not a sibling
+  under the worklog's. Worked pair, checked byte for byte:
+  `docs/worklogs/JOBVITE-BUMP-403-report.md` and `consensus/JACK-report-jobvite-fastmcp-403.md`.
+  **A worklog written by the super-orchestrator working inside the repository has no operations
+  copy and this rule does not ask for one**; `docs/worklogs/REPOINT-403-report.md` is that case,
+  which is why looking for its twin finds nothing.
 
 **Every finding ships with a suggested fix, at every severity including nits.** A finding without a
 remedy costs the author the whole diagnosis a second time.
