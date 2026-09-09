@@ -5,6 +5,29 @@ Tier-1 sub-orchestrator, dispatched by JACK under `PROTOCOL-super-orchestrators.
 branches cut from `cc42576` (PR 4's merge) and deliberately NOT rebased after main moved to
 `4b3b040`.
 
+## POINTERS THAT LEAVE THIS REPOSITORY
+
+**A READER WHO HAS ONLY `fast-mcp-jobvite` CANNOT RESOLVE MUCH OF WHAT THIS REPORT CITES.** Nothing
+below repeats the warning at each use, so it is made once, here. Everything in this list lives
+somewhere else:
+
+- `PROTOCOL-super-orchestrators.md`, and every K- and J- ledger id quoted from it (K-0060, K-0074,
+  K-0079, K-0091, K-0099, K-0105, J-0138, J-0139, J-0141): the operations repository's root. The
+  ledger ids are text INSIDE that document, not files of their own, so they are reachable only if
+  it is.
+- `consensus/...` briefs, pull request bodies and reports, and bare `reviews/REVIEW-*.md` review
+  prose: the operations repository. Note the collision: THIS repository has its own `docs/reviews/`,
+  a different directory holding checker scripts.
+- `standards/backend/python.md` and its siblings: a THIRD repository, `evolv-coder-standards`.
+  `MUST-READ-DOCS.md`: the operations repository's root.
+- Eight SHAs cited here in the same bare form as this branch's own resolve only elsewhere:
+  `5faec69`, `bf55860`, `deb6158`, `3e19ce3`, `8745bb9`, `66f9e87` and `b0a02d6` in the operations
+  repository, and `634ef4b` in `fast-mcp-template`. `git cat-file -t` fails on all eight here.
+- `b0a06d2` resolves NOWHERE, in any repository, which is the whole point of the sentence naming it.
+- `/tmp/suborch-jobvite-*` worktree paths and the scratchpad edit-script paths: this machine, this
+  session, and already gone.
+- "board row N": a live task-tracking board outside git entirely, not a file in any repository.
+
 Three pieces, not the two the brief opened with: Tier 0 inserted piece 0 mid-task.
 
     piece 0   board row 36        one archived relative link, the trunk red     MERGED as 4b3b040
@@ -351,6 +374,12 @@ ruling:
     5 fired, 0 not fired, 0 could not run, of 5 controls.
     rc=0
 
+**THE FIGURE 557 IS DATED, HERE AND EVERYWHERE BELOW.** Every "557 files" in this report is the
+corpus as of `7e4b4be`, BEFORE this document entered it. The corpus is this repository's own tracked
+files and this report is committed under `docs/worklogs/`, so the copy makes it 558: a document that
+counts a population it then joins. The citation count is unchanged at 2101, the delta being exactly
+one file with no citations in it.
+
 **The positive arm** runs the real `_tracked_files()` result and requires three NAMED members: this
 checker itself, `docs/DESIGN.md` and `pyproject.toml`.
 
@@ -371,7 +400,8 @@ That is the fail-open closed on both arms.
 **What the control does NOT reach, stated in the file rather than implied.** It proves the
 enumeration RUNS and REACHES three named members; it does not BOUND the corpus. Measured (round 2,
 reproduced by round 4): widening `_SKIP_PARTS` to exclude five of this repository's own RECORD
-directories takes the corpus from 557 files to 347 and the citations from 2101 to 1561, a quarter
+directories takes the corpus from 557 files to 347 (both as of `7e4b4be`) and the citations from
+2101 to 1561, a quarter
 gone, while the arm still prints 5 of 5 at exit 0. **No floor is added for it, deliberately**: a
 count here would be a second copy of a number that moves with every commit, which is the decay this
 repository has paid for repeatedly. Bounding the corpus is a different property and wants its own
@@ -666,7 +696,9 @@ Listed because Tier 0 asked for them as a set, and because they are one family.
 17. **A CITATION COPIED OUT OF A MESSAGE AND NEVER RESOLVED, inside the very commit that
     folded a decayed record.** Folding round 6 I carried a SHA out of the super-orchestrator's
     ruling into `030b2b9`'s message: "b0a06d2 committed fourteen REVIEW-jobvite-*.md files".
-    `b0a06d2` resolves to nothing; the commit is `b0a02d6`. He caught his own transposition two
+    `b0a06d2` resolves to nothing anywhere; the commit is `b0a02d6`, which resolves in the operations
+repository and NOT in this one, so a reader here gets the same "Not a valid object name" for both
+and cannot tell the correction from the error without the note. He caught his own transposition two
     minutes later, after my commit was already written. The three figures that sentence carries I
     DID re-derive (fourteen at that commit, four of them preamble, eighteen now, all exact);
     **the citation attached to them I did not.** A figure and its citation are two claims and I
@@ -692,6 +724,18 @@ Listed because Tier 0 asked for them as a set, and because they are one family.
     worth listing: it is the same instrument that produced "seven" and that left the SHA itself
     unresolved, turned on a message of my own composition inside the very report of the earlier
     failure. Re-derived here by `grep -o | wc -l`, not by eye.
+
+20. **THE COPY WAS CHECKED BY THREE PROSE CHECKERS AND NOT BY THE GATE.** I ran
+    `check-brief-report-references.py`, `check-standards-citations.py` and
+    `check-cross-references.py` over the worklog copy, saw rc=0 three times, and committed it. The
+    required check's commit-time hook step scans every tracked file for secrets, and this document
+    FAILS it: two UNAUDITED "Hex High Entropy String" findings, the 17-hex `routing.sender` ids in
+    the payloads quoted above. Round 7 replayed the Gate and found it; my three checkers could not,
+    because none of them is that step. **A subset of checks chosen because it is the subset I
+    happened to know is not a green.** The rule: a new file under `docs/worklogs/` gets the Gate's
+    own hook step replayed over it before it is committed. I reproduced the failure myself before
+    folding, rc=1 with two findings, using the invocation the checker itself prints when its
+    dependency is missing rather than the bare `python3` that had refused at rc=2.
 
 ## HOW THE EDITS WERE MADE
 
@@ -768,21 +812,29 @@ The instrument this task was wrong about, now fired five times. Three payloads I
 
     {"success":true,"message":"Message sent to suborch-jobvite-followups's inbox",
      "msg_id":"bdcdd456-d65d-43aa-bcb2-59b295154314",
-     "routing":{"sender":"ac5abc41759a9551e", ... "target":"@suborch-jobvite-followups", ...}}
+     "routing":{"sender":"<redacted, see below>", ... "target":"@suborch-jobvite-followups", ...}}
 
     {"success":true,"message":"Message sent to suborch-jobvite-followups's inbox",
      "msg_id":"ea2c34a8-ce1d-4776-a0ab-ae62ed84980e",
-     "routing":{"sender":"a59e9cf48cdf9a00b", ... "target":"@suborch-jobvite-followups", ...}}
+     "routing":{"sender":"<redacted, see below>", ... "target":"@suborch-jobvite-followups", ...}}
 
     {"success":true,"message":"Message sent to suborch-jobvite-followups's inbox",
      "msg_id":"a035dc5f-b0f6-4d9b-8211-32e55222293e",
-     "routing":{"sender":"a2829b50159a1dccb", ... "target":"@suborch-jobvite-followups", ...}}
+     "routing":{"sender":"<redacted, see below>", ... "target":"@suborch-jobvite-followups", ...}}
 
 Two earlier ones (`review-jobvite-link-r3` and `review-jobvite-preamble-r3`) arrived at my end as
 teammate messages; J-0141 carries the first, and the second is recorded as an independent
 replication rather than a repeat. **Every one: `success: true`, addressed by NAME in the `to` field,
 surfacing at the parent tagged by the sender's raw agent id.** That is exactly the mechanism
 PREAMBLE now describes and exactly what six of my briefs had forbidden anyone from testing.
+
+**THE `sender` FIELD IS REDACTED IN ALL THREE PAYLOADS ABOVE, and the redaction is the point of this
+sentence rather than a silent edit.** Each held a 17-hex agent routing identifier, which this
+repository's commit-time secret scanner rates a high-entropy hex string. It is not a credential and
+grants nothing, but a scanner cannot know that, and the honest fix is to remove the value rather
+than to widen the audited baseline so the scanner stops asking. Nothing the measurement rests on
+went with it: the `success` field, the recipient's NAME in the `to` field, and the fact that each
+message surfaced at the parent tagged by its sender's id are all still on the page.
 
 ## CROSS-LANE ITEMS I REPORTED RATHER THAN FIXED
 
