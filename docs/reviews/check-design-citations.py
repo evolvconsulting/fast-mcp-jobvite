@@ -568,6 +568,49 @@ def controls(text: str, tracked: list[pathlib.Path]) -> int:
                 f"{said} of 2 refusals printed)"
             )
 
+    # AND THE ARM THAT SCANS THE REAL CORPUS END TO END, which review
+    # round 5 found nothing did. Control 4 above checks MEMBERSHIP in
+    # the list and control 5 passes an EMPTY one, so `citations()` was
+    # never called from here with the real list - and `citations()` is
+    # the only path to `repoint_exempt.is_exempt` and to the per-file
+    # read. Both of those crash on ordinary breakage (a register moved
+    # aside, a tracked file gone from disk), and with either one broken
+    # this arm printed "5 fired, 0 not fired, 0 could not run" at exit
+    # 0 in the SAME TREE where the default arm refused at exit 3.
+    #
+    # NO NEW ENUMERATION. It takes the list `_dispatch` already
+    # threaded, so there is no second `git ls-files` and no second call
+    # site to guard.
+    total += 1
+    try:
+        scanned = citations(tracked)
+    except Exception as exc:  # noqa: BLE001 - main's backstop, at the narrow site
+        # ANY exception, named rather than enumerated. Three rounds of
+        # listing types here missed one every time, so this lists none
+        # and reports what it caught.
+        not_run += 1
+        print(
+            "  CONTROL the real corpus scans end to end -> NOT RUN "
+            f"({type(exc).__name__}: {exc})"
+        )
+    else:
+        if scanned:
+            fired += 1
+            print(
+                f"  CONTROL the real corpus scans end to end -> FIRED "
+                f"({len(scanned)} citations across {len(tracked)} files)"
+            )
+        else:
+            # AN EMPTY RESULT FROM A REAL CORPUS IS NOT A PASS. Both
+            # scan arms call that a broken selector and exit 1; a
+            # control that printed FIRED on it would rebuild, inside
+            # itself, the fail-open it exists to close.
+            print(
+                f"  CONTROL the real corpus scans end to end -> DID NOT FIRE "
+                f"(0 citations across {len(tracked)} files; the selector is "
+                f"broken, not the corpus)"
+            )
+
     # THREE OUTCOMES, THREE NUMBERS, and they are not interchangeable.
     # A control that ran and did not fire is a FINDING about this
     # checker (rc=1). A control that could not run is a BROKEN
