@@ -10,7 +10,7 @@ from `main` at `ccbdaae`.
 
 **The findings, the measurement, the gate exit codes and the
 corrections to my brief are in
-[`docs/reviews/REPORT-157-mirror-minutes.md`](../reviews/REPORT-157-mirror-minutes.md),
+[`docs/reviews/REPORT-157-mirror-minutes.md`](../../reviews/REPORT-157-mirror-minutes.md),
 and they are there ONCE.** This file deliberately does not restate
 them. Two copies of one measurement is the defect `PREAMBLE.md` opens
 with — *"a retyped constant decays"* — and a worklog that paraphrases
