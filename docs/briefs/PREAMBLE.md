@@ -15,6 +15,12 @@ The shared task-list tools are DEFERRED, not absent - they will not be in your o
 Claim with `TaskUpdate` (`owner: "<your-agent-name>"`, `status: "in_progress"`), and mark it
 `completed` when you finish.
 
+**DEFERRED IS NOT THE SAME AS PRESENT, and one whole population has no board at all.** A nested
+agent - a reviewer or worker spawned by a sub-orchestrator rather than by the super-orchestrator -
+gets `No matching deferred tools found` from that search. That is a fact about where you sit, not
+a fault and not a broken tool. If your brief handed you no task id, you have no row to claim:
+claim nothing, and deliver by the exception under "How to deliver".
+
 **Work you find outside your scope is REPORTED - never a silent fix and never a silent drop.**
 Whether you also file it as a task depends on a mandate your brief either grants or does not:
 a REVIEWER's brief says findings go on the board and they do; a sub-orchestrator's does not,
@@ -63,6 +69,10 @@ already `completed`, say so and stop.**
   /tmp/<agent-name>-work <sha>`. **Do NOT check anything out in the shared checkout** - I am working
   in it, and a tree moving under an agent has cost reviewers whole mutation batches.
 - Run `git worktree list` before moving any ref.
+- **Cut the worktree yourself, with `git worktree add` against the repository the work is in.**
+  Do NOT reach for a harness's `isolation: "worktree"` option: it cuts from the SESSION's outer
+  repository, which is the evolv operations folder and never the product repo you were sent to
+  (`PROTOCOL-super-orchestrators.md` section 5).
 - **`docs/DESIGN.md` is FROZEN.** Read it as
   `git show "$(cat docs/DESIGN-FREEZE.txt)":docs/DESIGN.md` - **derive the SHA, never retype it and
   never accept one typed into a brief.** A brief naming a stale-but-VALID SHA resolves cleanly and
@@ -75,7 +85,7 @@ already `completed`, say so and stop.**
 - **`docs/OBLIGATIONS.md` is not yours to hand-edit.** If your change moves an anchor, run
   `docs/reviews/check-obligations.py` and repoint by **parsing its output**, never by retyping a
   number you just read. Quote its verbatim output in your report.
-- **Remove your worktree when done**, and say in the report that you did.
+- **Remove your worktree when done, and say so** - unless your brief keeps it for me to read.
 
 ## Evidence standards
 
@@ -162,16 +172,82 @@ matches nothing looks identical to a harness that ran nothing.
 
 ## How to deliver
 
-Two channels, both required. Your final Agent-tool output does NOT reach me.
+Two channels, both required. Your final Agent-tool output does NOT reach whoever dispatched you.
 
-1. **Your report, committed on your branch**, at the path your brief names - `docs/worklogs/` or
-   `docs/reviews/`. Never only a worktree, never `/tmp`: a 48KB report with nineteen findings was
-   destroyed exactly that way.
-2. **`SendMessage` with `to: "team-lead"`.** **`to: "main"` does NOT work** - it resolves to you, the
+1. **Your report, committed on your branch**, at the path your brief names. Never only a worktree,
+   never `/tmp`: a 48KB report with nineteen findings was destroyed exactly that way.
+   **IF YOU HAVE NO BRANCH, THIS BULLET IS NOT YOURS AND YOU MUST NOT INVENT ONE.** A nested
+   reviewer commits nothing; its prose report is a file under the operations repository and what
+   lands in this repository is the one-line stub, committed by the super-orchestrator. So
+   the durability this bullet promises is, for a review round, somebody else's obligation and not
+   a thing you can discharge.
+   **A reviewer's prose lives under the operations repository's `reviews/` and is committed there
+   by the super-orchestrator, when the round lands**
+   (`PROTOCOL-super-orchestrators.md` section 7). Measured 2026-09-09: the review reports of this
+   task sat untracked until the super-orchestrator committed them, which is the failure this rule
+   exists to prevent. **A file in a git repository is not a committed file.**
+2. **`SendMessage` to the agent that dispatched you.** A sub-orchestrator answers the
+   super-orchestrator, `to: "team-lead"`; a worker or a reviewer answers its own parent, by that
+   agent's name, and its brief names it. **`to: "main"` does NOT work** - it resolves to you, the
    sender, and errors. Too long for one call? Send numbered parts, never truncate.
+
+**THE EXCEPTION, and it is a population rather than an edge case.** Both rules above are written
+for a NAMED teammate. **Below Tier 1 there are no named teammates**
+(`PROTOCOL-super-orchestrators.md` section 5, K-0099 correcting K-0079, canon on 2026-09-09), so a
+reviewer dispatched by a sub-orchestrator is a NESTED, UNNAMED subagent, and its final Agent-tool
+output IS returned to whoever spawned it rather than vanishing. **That returned output plus the
+report FILE are your deliverable.** `SendMessage` may ALSO reach your parent - measured arriving,
+addressed by name in the `to` field and surfacing at the parent tagged by the sender's agent id
+(`PROTOCOL-super-orchestrators.md` section 5, J-0138 and J-0141 for two lanes' measurements;
+K-0105 correcting K-0099) - so treat it as a second copy and never as the only one.
+
+**IF YOUR BRIEF DOES NOT SAY WHICH KIND YOU ARE, DELIVER BY BOTH.** Asking is not available to
+you, because the channel you would ask on is the one in doubt, so this is a default rather than a
+decision. **You can also just look:** the `ToolSearch` at the top of this file already tells you
+which population you are in, because a nested agent gets `No matching deferred tools found` and a
+named teammate gets the task tools. **Record in the file which population you believe you were**,
+even though you acted on both, so the next reader can tell a message that went missing from one
+that was never sent.
+
+**AND IF A BRIEF TELLS YOU NOT TO TRY A CHANNEL, THAT IS NOT EVIDENCE THE CHANNEL FAILS.** A brief
+that forbids the attempt destroys the evidence for it (`PROTOCOL-super-orchestrators.md` section 6
+and J-0139, which state the rule in those words; K-0105 is the sibling lane's measurement that
+first exposed the gap). Report the prohibition IN YOUR RETURNED OUTPUT to whoever dispatched you,
+which is the one route no brief can take away, and deliver by the file as well.
 
 Inbound messages reach you only when you go IDLE - not between two tool calls. If you want to stay
 reachable, break long work into turns.
+
+**WHERE EACH KIND OF DOCUMENT LIVES, AND TWO OF THE THREE MOVED OUT OF THIS REPOSITORY.**
+`PROTOCOL-super-orchestrators.md` (ADOPTED by KING on 2026-09-08, K-0074, after seven review
+rounds) rules that a product repository keeps only its CANON and that per-task prose lives in the
+evolv operations repository. Where you write is therefore decided by what the document IS:
+
+- **Your per-task BRIEF is not in this repository.** It is `consensus/<OWNER>-brief-<name>.md`
+  under evolv. `docs/briefs/` keeps canon only - this file, which every agent here reads first,
+  and `PROTOCOL-sub-orchestrators.md`. The per-task briefs already sitting in `docs/briefs/` are a
+  RECORD of how it used to be done; they are not a location to add to.
+- **A REVIEW round's prose is not in this repository either.** It is
+  `reviews/REVIEW-<repo or subject>-R<n>.md` under evolv, and what lands here is ONE STUB per
+  round, described below. This is the change that takes the prose out of a product repository,
+  which is what had grown `docs/` here to several times the size of `src/` and `tests/` together.
+- **A WORKLOG - a measurement report, and not a review - still lands in `docs/worklogs/`** on your
+  branch, with a byte-identical copy under evolv. The PROTOCOL left this one for this amendment to
+  settle (section 5, K-0060 condition 2) and this is the settlement: it does not move. The copy is
+  not duplication for its own sake - a teammate's `SendMessage` only arrives at its leader's next
+  turn boundary, so the FILE is the channel that can be read without one.
+  **THE TWO NAMES ARE NOT DERIVED FROM EACH OTHER, so your brief gives you BOTH paths and this
+  file cannot give you a rule for the second.** Your worklog is `docs/worklogs/<TASK>-report.md`
+  here; what the operations repository holds is THE REPORT YOUR BRIEF NAMES, normally
+  `consensus/<OWNER>-report-<task>.md` - the same content under the brief's name, not a sibling
+  under the worklog's. Worked pair, checked byte for byte:
+  `docs/worklogs/JOBVITE-BUMP-403-report.md` and `consensus/JACK-report-jobvite-fastmcp-403.md`.
+  **IF YOUR BRIEF NAMES ONLY ONE OF THE TWO, REPORT THE GAP RATHER THAN INVENTING THE OTHER NAME.**
+  Nothing requires a brief to carry both, so this is a real case and not a hypothetical; a guessed
+  name produces a file nobody looks for, which is the failure the pair exists to prevent.
+  **A worklog written by the super-orchestrator working inside the repository has no operations
+  copy and this rule does not ask for one**; `docs/worklogs/REPOINT-403-report.md` is that case,
+  which is why looking for its twin finds nothing.
 
 **Every finding ships with a suggested fix, at every severity including nits.** A finding without a
 remedy costs the author the whole diagnosis a second time.
@@ -179,10 +255,37 @@ remedy costs the author the whole diagnosis a second time.
 **End with what you did NOT verify.** That section is where I decide what to check myself, so it is
 for what you could not settle - not for a cheap item you simply did not try.
 
-**IF YOUR REPORT IS A CODE REVIEW, DECLARE THE RANGE YOU COVERED**, as an HTML comment directly
-under the heading, so it renders as nothing:
+**IF YOUR REPORT IS A CODE REVIEW, DECLARE THE RANGE YOU COVERED - IN TWO PLACES, BECAUSE THERE
+ARE NOW TWO READERS.** The prose report under evolv opens with the declaration, as an HTML comment
+directly under the heading so it renders as nothing, for the human and for the round after yours:
 
     <!-- REVIEW-COVERS: <base>..<head> -->
+
+And this repository gets that SAME LINE and nothing else, in a file of its own, for the checker.
+The path, and then the whole of the file's content:
+
+    docs/reviews/REVIEW-<subject>-R<n>.md
+
+    <!-- REVIEW-COVERS: <base>..<head> -->
+
+`docs/reviews/REVIEW-403-R1.md` through `-R6.md` are six worked examples, one file, one line each.
+
+**THE STUBS LAND AS THE BRANCH'S LAST COMMIT, AND THAT COMMIT TOUCHES NOTHING ELSE.** That is what
+makes it, by construction, the one commit no round reads
+(`PROTOCOL-super-orchestrators.md` section 7, K-0088 ruling 1). **Nothing the last round found is
+folded into it**: a Low is folded on an ordinary commit and gets one more round, and a Nit is named
+in the pull request body and tracked on the board. Bundling either one puts unreviewed work into
+the commit whose whole purpose is to be the reviewed set's receipt. Worked example in this
+repository, which `git show --stat` will confirm lists two one-line files and nothing else:
+`b6afce2`, "the review stubs for rounds 5 and 6, the last commit before the push".
+
+**THREE NAMING RULES, read out of `check-review-coverage.py` itself. Break one and the stub is not
+a defect, it is INVISIBLE** - the checker skips the file and your round leaves no trace at all:
+
+- the stem must match `REVIEW.*-R<n>`, so the round number is IN the filename (`IS_REVIEW`);
+- it must NOT end in `REVIEW` and must NOT begin `PLAN-REVIEW` - both mark a document review
+  rather than a commit range, and the checker skips them (`NOT_A_COMMIT_REVIEW`);
+- ONE declaration per file. A second `REVIEW-COVERS` line in one file is refused at exit 2.
 
 `docs/reviews/check-review-coverage.py` enumerates every commit on the trunk and reports the ones
 inside no round's declared range. **It exists because 45 consecutive commits were once reviewed by

@@ -1377,7 +1377,7 @@ jobs:
         run: bash docs/reviews/probe-mirror-zero-refs.sh .github/workflows/mirror.yml
 
       # A REPORT THAT WAS WRITTEN IS NOT A REPORT THAT WAS COMMITTED.
-      # PREAMBLE.md:133 has said so since the first 48KB report was lost
+      # PREAMBLE.md:177 has said so since the first 48KB report was lost
       # in a worktree; REVIEW-R18.md then sat untracked in another one,
       # and I declared it destroyed before a second pair of eyes found it
       # on disk. A rule nothing checks is a rule that documents its own

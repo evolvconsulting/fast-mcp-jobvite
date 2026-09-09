@@ -5,7 +5,7 @@ r"""A brief must cite a report that EXISTS in the repository.
 
 **THE DEFECT.** `REVIEW-R18.md` - 28KB, ten findings, the only narrative
 record of its round - sat UNTRACKED in `fmj-worktrees/r18` for hours
-while nothing in the repository could see it. `PREAMBLE.md:133` already
+while nothing in the repository could see it. `PREAMBLE.md:177` already
 required the opposite: a report must be *"committed on your branch ...
 Never only a worktree, never `/tmp`: a 48KB report with nineteen
 findings was destroyed exactly that way"*. So the rule was written after
