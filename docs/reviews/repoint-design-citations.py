@@ -346,6 +346,8 @@ def already_moved_from(blob: str) -> str | None:
     A row that does not split into its four TAB-separated fields is a
     broken instrument, refused by file and line rather than crashed
     on (review round 4, F13): the file's header invites hand edits.
+    A row whose blob field is not a 40-character blob id is refused
+    the same way (review round 5, F15).
     """
     if not LOG.exists():
         return None
