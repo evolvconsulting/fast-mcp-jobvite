@@ -136,3 +136,189 @@ d0bdf2a NONE BASH-1: the count was 20 against a population of 39, and
 f38f7c3 NONE #170 F3, fixed by TENSE not by arithmetic - the fourth c
 2945f5e NONE BRIEF for R19, and #131 CLOSED by ruling on the half tha
 32aa9a8 NONE HANDOFF v6, and it is the first version whose predecesso
+#
+# 2026-09-09, +165: the set measured at b38b3cc, after pull requests 5,
+# 6 and 7 merged. THREE of these lines are those pull requests' own
+# stub-only last commits (5cd314e, f1463e8, 98589f6). They are NONE by
+# construction and not an oversight: a stub commit is the one commit no
+# round reads, and no commit can declare its own sha, which is the
+# one-merge lag this file's header already describes.
+#
+# THE OTHER 162 ARE OLDER THAN ALL THREE. Every one is reachable from
+# cc42576, the base both branches were cut from, so they were already
+# outstanding before this task began; that is why the checker exited 1
+# at cc42576 as well, and why the count here is not the size of the
+# recent work. Nobody has read them.
+#
+# The reconciliation behind that split, run before any line was written:
+# every CONTENT commit of the three pull requests is covered by its own
+# round's stub and appears nowhere below; their empty commits and their
+# three clean merges are skipped as nothing to read. Six of the lines
+# below are merge commits carrying merge-unique content, so they are
+# scored like ordinary work rather than skipped: 13d4020, 2dbb0e5,
+# 354c811, 3eeef83, a27527c, df8c60f.
+04432c5 NONE The audit lands, my "nightly" was false, and a test rege
+04ad8e7 PARTIAL #204: FINDINGS, and ORPHANED-BY-REPOINT - a third citati
+084c8df NONE MY probe turned main RED on a wired gate - the third tim
+0856362 NONE REVIEW-273-7A2 findings on 7a.2: fix the superlative its
+08fe119 NONE R270-H1: the shard join took a COMMENT, so a slack step 
+0acdf67 NONE #240 lands: execution is 96.6% of a harness row, and sel
+0c9c3a7 NONE R22's three findings against my own work, all confirmed 
+0ca2eec NONE The 306s was QUEUE and it is transient: the structural w
+0d14caa NONE Record the withdrawn single-factor method as a list, and
+0d2c945 NONE My own #236 probe turned two wired gates red, and my pre
+1045edb NONE REVIEW-R21: 2 High, 3 Medium, 3 Low, 4 nits over c749334
+110e750 NONE REVAMP-238 7a.2: settle the 12-lane question with a real
+13a11af NONE #170 second sweep: the harnesses are CLEAN, and my first
+13d4020 NONE Merge branch 'fix/u15-u1boot-three'
+1506865 NONE #170: F1 is CLOSED by ADR-0034, and the fix rebuilt the 
+1636f56 NONE MEASURED-268: sharding u3's rows is worth 6s, and the bi
+165223d NONE The README claimed a green badge and never said what the
+17ba657 NONE #277: the --row-re refusal said "no --row-re" about a fl
+17fcb47 NONE #223 report: the worklog, with both corrections to #194 
+1870d40 NONE Discharge #236's residual: drive both remaining hunks to
+1985471 PARTIAL RETRACTED: "REVIEW-CHECKLIST.md is a second dangling ref
+1bd6623 NONE #249 closure: pin the three citations the sibling branch
+21489b6 NONE MEASURED-252: the report, including the row that broke t
+22accee NONE §6a: u6-paging-controls SELECTS, so the residual is one 
+23280e2 PARTIAL #180 + #182: the register exists, so the count derives -
+2350530 NONE The ADR problem is an INDEX problem, so the index now st
+2a8e78d NONE PROBE-273: fit the packing probe from three comparable r
+2dbb0e5 NONE Merge branch 'main' into ci/238-revamp
+305fd05 NONE Audit the packing probe's work signature into the secret
+30b16ab NONE Re-tier CI: 16 jobs to 5, and the twelve-lane fan-out wa
+3302c35 NONE PROBE-273: refit the shard column per run, from the runs
+33697ea NONE MEASURED-273: subject-anchored citations into 7a.2, and 
+33c23e0 NONE #236 MEASURED: the hunks were unproved, and the amputati
+354c811 NONE Merge branch 'fix/shard-refit'
+3a13488 NONE REVAMP-238 7a.2: there was never a second packer, and 11
+3a78315 NONE DIAG-262 closure: the 26 is right - publish the derivati
+3abfb03 NONE WITHDRAW my concurrency finding: the 306s was a transien
+3b21d4f NONE The merge-invention detector landed unformatted, and its
+3c0d648 NONE Close two gaps the merge exposed that no branch could se
+3eeef83 NONE Merge branch 'measure/286-u9-coverage'
+3f0cc3a NONE MEASURED-273: record the shard refit, what closed, and w
+42a793a NONE Close the fixed-/tmp-path class, and gate the shape CI c
+43fca5f PARTIAL BRIEF for #208: read the leads, tighten the detector, an
+4879231 NONE #170: the census tool, and its selector was blind to a h
+4a51a23 NONE REVIEW-R19: 0 High, 3 Medium, 2 Low, 2 nits - and the th
+4b4325d NONE REVIEW-R22: a second wired gate is red, and the exemptio
+4bc96a4 NONE Take AUDIT-237 v2 only: main's copy audits a ci.yml that
+4be2b09 NONE Section 7, fifth rewrite: state the measurements and ONE
+4d72cd9 NONE REVAMP-238 7a.2: I re-derived round 6's numbers and MY P
+50b006d NONE Per-row test selection for the five slowest harnesses - 
+52cdfd8 NONE REVAMP-238 7a.2: re-derive round 4's two numbers rather 
+54c5665 NONE MAIN WAS RED ON MY PUSH: two probes in scripts/, which i
+5699c31 NONE CI IS A TOOL'S CI NOW: the harnesses leave the push path
+5b00bfe NONE Section 7a: re-derived from the run payloads, which no r
+5b05745 PARTIAL #170: the protocol claim corrected by measurement, and t
+5b4ae9c NONE #222: merge-invented content, an instrument for it, and 
+5cca9eb NONE Repair two malformed shellcheck directives that were fai
+5cd314e NONE docs: the three review stubs for this branch's rounds
+5ee2e80 NONE R270-R4: the fourth join, and a shard count nothing read
+5f46303 NONE U3 controls select per row, and the map is blind to a so
+6086395 NONE #209: worklog - the measurement, the two remedies refuse
+60c3359 NONE The Assurance tier was FIRED, and the record now says so
+620407f NONE One --cov suite run, the audit's comment corrections, an
+6213fae NONE #170: correct my own report - I inherited an exception a
+6466bd2 NONE Repack the 12 harness lanes: pole 458s -> a predicted 31
+661acfe NONE CI IS FOR THE PROJECT CODE: 41 harness steps now run whe
+6827e9d NONE Retire 29 records nothing reads, and the ratio does not 
+6892dad NONE REVAMP-238 7a.2: the 12-lane sign is NOT established, an
+6894e50 NONE Derive the liveness population instead of naming one wor
+6a19bfe NONE MEASURED-270: the exactness gate multiplies by a shard c
+6b9067f NONE FIX-254 R3 closure: make the branch green on ruff, which
+6f89364 NONE REVAMP-238 7a.2: closure round - restore the column the 
+701131a NONE MEASURED-270 §7: the w194 salvage does not collide, and 
+707b56c NONE FIX-254 R3: close M1/M2/L1/L2/L3 - a derived gate for th
+733979a NONE REVAMP-238 7a.2: size the shard plan from each harness's
+7431bb5 NONE The "what I did NOT verify" list had itself gone stale, 
+7485466 NONE #221: the interpreter never mattered, the venv always di
+76800d5 NONE REVAMP-238 7a.2: round 3 - CUT the soft claims instead o
+78ea1cf NONE #170: the QUOTED signal - a defect-grep finding its own 
+7b34022 NONE WORKLOG-221: the census, both control arms, and the run 
+7b4b598 PARTIAL BRIEF for #194: the last two floors, and the in-flight l
+7dab0dd NONE The #252 probe prints the canonical result line, so a fi
+8041b51 NONE #224: the row a filename-shaped selector could not see, 
+804b2f7 NONE The push brief becomes a record, and its actionlint cave
+814c443 NONE Mirror by deploy key, because branch protection broke th
+8183686 NONE R26: restore the three findings a rewrite deleted, name 
+831018f NONE HANDOFF v8: v7 went false one commit later in the way it
+8405b38 NONE FIX-254 R1: run the guard, register the probe, lift it i
+8628ae7 NONE RULING #231a: the merge-authored rule STAYS, and the rem
+8872f6b NONE Retract two claims of mine in section 7: a broken proxy 
+88a8efe NONE REVAMP-238 7a.2: the 11-lane loss does not reverse at 13
+8908515 NONE The plan-measurements step said "stale claim" for a miss
+8ae3542 PARTIAL #210 #215 #216 #217: the ruling's evidence, and R21 remo
+9035f2b NONE Correct REVAMP-238 section 7 in place: the wall is 14.10
+935c756 NONE Register the #252 probe with both floor instruments, and
+96072cd NONE REVAMP-238 7a.2: the LPT was mine and it was wrong - 4 j
+966b706 NONE #223: the unwatched floor gets arms, and the LOWER bound
+98125e9 NONE #249 review round 1: fix the vacuous zero-row guard, and
+98589f6 NONE docs: the review stubs for rounds 1 to 8, the last commi
+98a28fe NONE REVAMP-238 7a.2: round 4 - I PUBLISHED A NUMBER I NEVER 
+9be28ec PARTIAL #214 (R21-L1): the credit named the wrong commit and the
+9ca453b NONE The closure pass on e3b4d21 found four more, two of them
+9e0de5b NONE REVAMP-238 7a.2: the regression was an ARTIFACT OF THE P
+a0677bc PARTIAL #192: REVIEW-R18.md was never lost, and the gate that wo
+a27527c NONE Merge fix/222-merge-invented-content: TEN merges invent 
+a389c79 NONE R23: my own probe reproduced the defect it was written t
+a38e0fb NONE Finish the sibling sweep: A28 and A34 still had bare `ex
+a4441aa PARTIAL #212 (R21-M2): the census was short by one, and the miss
+a474edc NONE The merge into current main, verified rather than assume
+a52af14 NONE BRIEFS for the nine R21 findings, grouped so no two agen
+a849f7f NONE MEASURED-252 gains the follow-up, and RETRACTS its own 3
+a9bc745 NONE DIAG-262 R1: the $OUT fix swapped a loud refusal for a s
+aa1f0a7 NONE A test name reaches a kill verdict as a LITERAL, never a
+acb0f82 NONE Remove two scratch probes committed by accident
+ae998e3 NONE #286: U9's amputation rows DO select, and the map is bli
+afe16e6 NONE REVIEW-273 findings: converge RESTARTS on measurement, a
+b19f9ac NONE R270-R2: the gate red on a COMMENT, and my own battery s
+b1cf92f NONE PUSH BRIEF: the PATH claim I gave Phil is refuted, and t
+b6afce2 NONE docs: the review stubs for rounds 5 and 6, the last comm
+b810aea NONE REVAMP-238 7a.2: one account of the refit, and two model
+b8f921d NONE The ladder REFUTES a limit of ours: nine slots we freed,
+b92e31e NONE FIX-254: the amputation harness scored a broken pytest r
+bb57bf8 NONE DIAG-262: the #252 probe's $OUT is a machine-global path
+bbd4734 NONE #180: WS-04's overlap is no longer my inference - the sr
+bc09ee0 NONE #170 third sweep: citations - and one count has NO deriv
+bf12255 NONE #183: the record classifier, and MY FIRST WIDENING SILEN
+c03a3a3 NONE Per-row selection opened an rc=4 verdict trap, and the v
+c263767 NONE RULING: #223's new self-test stays UNWIRED, and the regi
+c37f442 NONE REPACK-244: the queue gap is one job's 305s wait, and on
+c56be63 NONE fix: two real CodeQL findings, and the scanner earned it
+c57b1cc PARTIAL #211 + #213: the counterfactual, and a correction that r
+c5d6723 NONE REVAMP-238: the design, the measurements, and the before
+c79d5ef NONE RULING #219: the unlisted directory REFUSES, because the
+c965ce0 NONE Record the pre-re-tier baseline, and why its own improve
+cb625f3 NONE #238 merge: mypy was RED on the revamp branch and its re
+cbb8359 NONE PROBE-273 closure: delete the false theorem, converge th
+d19f0df NONE REVAMP-238 7a.2: round 6 - my own table contradicted my 
+d22c676 NONE #249 review round 2: fold the doc corrections in place
+d485747 NONE Name the step for the battery it runs, not for one of it
+d4aebe0 NONE PROBE-273: bracket the makespan instead of estimating it
+d5d8b23 NONE docs: salvage two artifacts that existed only in /tmp wo
+d676bc4 NONE #273 closure: clear the mypy failure, hoist the shard gu
+d935574 NONE #207: the repoint tool skips docs/adr, and the skip is P
+d9eb3b3 NONE BRIEF for #187: the floor container measured by KIND bef
+dcb2725 NONE MEASURED-266: the lane rebalance report, and a defect in
+df3008f NONE R25-H1, H2 and L1: four amputations select, not five, an
+df8c60f NONE Merge branch 'fix/254-r3-findings'
+e05c685 NONE R23-H: the M12 vacuity guard was blind to a REDIRECT, so
+e108bc6 NONE REVAMP-238 7a.2: REWRITTEN - the floor is max(largest st
+e3b4d21 NONE R2 on #218: my fix broke its own citation, and the censu
+e55db3f NONE Section 7a's replacement claim was wrong too, so this is
+ecb37b4 NONE #249: port R24-H1 onto main - ask the INTACT tree once p
+ed8bc60 NONE Fix the phantom record I created while congratulating my
+ee9f005 NONE Every check on every trigger, the harness lane fanned ou
+f1463e8 NONE docs: the review stubs for rounds 1 to 7, the last commi
+f151b6b NONE R1 on #231B: the ground under Decision 2 collapses, and 
+f1c0805 PARTIAL #170: the container is 2361 live candidates, and DESIGN.
+f2c88b1 NONE R270-R3: I bounded the TOKEN and never bounded the `env:
+f489ed2 NONE #290: U4's selection holds all 17 rows, and it cannot ca
+f516679 NONE Fix the docs-lint probe two rule changes had broken whil
+f7f3074 NONE The stdio arm asserted a HANG, and the hang is a race th
+fa54741 NONE FIX-280/283/254-H3: three defects in the two unguarded a
+fb9cad2 NONE FIX-254 R2: make the shared library's absence loud, and 
+fc9e47f NONE My own correction pointed the wrong way: the superseding
+fd3e086 NONE #204: a discriminator for the bare `:NNN` citation form,
