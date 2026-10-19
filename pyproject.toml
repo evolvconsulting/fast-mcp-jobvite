@@ -25,7 +25,7 @@ authors = [{ name = "evolv Consulting" }]
 # through the transitive SDK with zero change to the code that broke.
 dependencies = [
   "fastmcp==4.0.3",
-  "mcp==2.1.1",              # the transitive SDK that broke a middleware with no code change
+  "mcp==2.2.0",              # the transitive SDK that broke a middleware with no code change
   # U3's, and the dependency slot was serialised to add it (collision 10: uv.lock
   # regenerates whole, so two units adding a dependency conflict on the whole file).
   # DESIGN.md:302-303 forbids a custom logging module and names loguru as what
